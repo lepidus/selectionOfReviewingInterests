@@ -1,0 +1,5 @@
+msgid "plugins.generic.selectionOfReviewingInterests.displayName"
+msgstr "Campo de seleção no campo Áreas de Interesse de Avaliação"
+
+msgid "plugins.generic.selectionOfReviewingInterests.description"
+msgstr "Adiciona um campo de seleção na Áreas de Interesse de Avaliação, com as opções sendo definidas a partir das configurações do plugin."
