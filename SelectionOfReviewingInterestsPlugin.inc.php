@@ -10,6 +10,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
+            HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
         }
         return $success;
     }
