@@ -11,6 +11,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
+            HookRegistry::register('Request::redirect', [$this, 'redirectUserAfterLogin']);
         }
         return $success;
     }
@@ -48,4 +49,30 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
     }
+
+    public function redirectUserAfterLogin(string $hookName, array $params)
+    {
+        $url = &$params[0];
+        if (strpos($url, '/submissions') === false) {
+            return;
+        }
+
+        $request = Application::get()->getRequest();
+        if ($this->userShouldBeRedirected($request)) {
+            $url = $request->getDispatcher()->url($request, ROUTE_PAGE, null, 'user', 'profile');
+        }
+    }
+
+    public function userShouldBeRedirected($request)
+    {
+        $context = $request->getContext();
+        $user = $request->getUser();
+
+        if (is_null($user)) {
+            return false;
+        }
+
+        return true;
+    }
+
 }
