@@ -67,12 +67,16 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $context = $request->getContext();
         $user = $request->getUser();
+        $userRoles = $user ? $user->getRoles($context->getId()) : [];
+        $userRoles = array_map(function ($role) {
+            return $role->getId();
+        }, $userRoles);
 
-        if (is_null($user)) {
+        if (is_null($user) || !in_array(ROLE_ID_REVIEWER, $userRoles)) {
             return false;
         }
 
-        return true;
+        return empty($user->getInterestString());
     }
 
 }
