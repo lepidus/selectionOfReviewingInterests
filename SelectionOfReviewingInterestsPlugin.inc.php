@@ -55,14 +55,17 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $templateMgr = $params[0];
         $template = $params[1];
+        $request = Application::get()->getRequest();
 
         if ($template === 'user/profile.tpl') {
+            if ($this->userShouldBeRedirected($request)) {
+                $templateMgr->registerFilter('output', [$this, 'requestMessageFilter']);
+            }
             return;
         }
 
         $backendMenuState = $templateMgr->getState('menu');
         if (!empty($backendMenuState)) {
-            $request = Application::get()->getRequest();
             if ($this->userShouldBeRedirected($request)) {
                 $request->redirect(null, 'user', 'profile');
             }
@@ -96,6 +99,22 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         }
 
         return empty($user->getInterestString());
+    }
+
+    public function requestMessageFilter($output, $templateMgr)
+    {
+        $profileTabsPattern = '/<div[^>]+id="profileTabs"/';
+        if (preg_match($profileTabsPattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
+            $offset = $matches[0][1];
+
+            $newOutput = substr($output, 0, $offset);
+            $newOutput .= $templateMgr->fetch($this->getTemplateResource('emptyInterestsMessage.tpl'));
+            $newOutput .= substr($output, $offset);
+
+            $output = $newOutput;
+            $templateMgr->unregisterFilter('output', [$this, 'requestMessageFilter']);
+        }
+        return $output;
     }
 
 }
