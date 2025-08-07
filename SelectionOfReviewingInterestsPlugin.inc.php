@@ -10,6 +10,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
+            HookRegistry::register('TemplateManager::display', [$this, 'addChangesOnTemplateDisplaying']);
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
             HookRegistry::register('Request::redirect', [$this, 'redirectUserAfterLogin']);
         }
@@ -48,6 +49,24 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
+    }
+
+    public function addChangesOnTemplateDisplaying(string $hookName, array $params)
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
+
+        if ($template === 'user/profile.tpl') {
+            return;
+        }
+
+        $backendMenuState = $templateMgr->getState('menu');
+        if (!empty($backendMenuState)) {
+            $request = Application::get()->getRequest();
+            if ($this->userShouldBeRedirected($request)) {
+                $request->redirect(null, 'user', 'profile');
+            }
+        }
     }
 
     public function redirectUserAfterLogin(string $hookName, array $params)
