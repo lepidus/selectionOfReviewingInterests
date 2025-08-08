@@ -3,6 +3,7 @@
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsManage');
 import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsActions');
+import('plugins.generic.selectionOfReviewingInterests.classes.hookCallbacks.HookCallbacks');
 
 class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 {
@@ -10,9 +11,10 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
-            HookRegistry::register('TemplateManager::display', [$this, 'addChangesOnTemplateDisplaying']);
+            $hookCallbacks = new HookCallbacks($this);
+            HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
-            HookRegistry::register('Request::redirect', [$this, 'redirectUserAfterLogin']);
+            HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
         }
         return $success;
     }
@@ -50,71 +52,4 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
     }
-
-    public function addChangesOnTemplateDisplaying(string $hookName, array $params)
-    {
-        $templateMgr = $params[0];
-        $template = $params[1];
-        $request = Application::get()->getRequest();
-
-        if ($template === 'user/profile.tpl') {
-            if ($this->userShouldBeRedirected($request)) {
-                $templateMgr->registerFilter('output', [$this, 'requestMessageFilter']);
-            }
-            return;
-        }
-
-        $backendMenuState = $templateMgr->getState('menu');
-        if (!empty($backendMenuState)) {
-            if ($this->userShouldBeRedirected($request)) {
-                $request->redirect(null, 'user', 'profile');
-            }
-        }
-    }
-
-    public function redirectUserAfterLogin(string $hookName, array $params)
-    {
-        $url = &$params[0];
-        if (strpos($url, '/submissions') === false) {
-            return;
-        }
-
-        $request = Application::get()->getRequest();
-        if ($this->userShouldBeRedirected($request)) {
-            $url = $request->getDispatcher()->url($request, ROUTE_PAGE, null, 'user', 'profile');
-        }
-    }
-
-    public function userShouldBeRedirected($request)
-    {
-        $context = $request->getContext();
-        $user = $request->getUser();
-        $userRoles = $user ? $user->getRoles($context->getId()) : [];
-        $userRoles = array_map(function ($role) {
-            return $role->getId();
-        }, $userRoles);
-
-        if (is_null($user) || !in_array(ROLE_ID_REVIEWER, $userRoles)) {
-            return false;
-        }
-
-        return empty($user->getInterestString());
-    }
-
-    public function requestMessageFilter($output, $templateMgr)
-    {
-        $profileTabsPattern = '/<div[^>]+id="profileTabs"/';
-        if (preg_match($profileTabsPattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
-            $offset = $matches[0][1];
-
-            $newOutput = substr($output, 0, $offset);
-            $newOutput .= $templateMgr->fetch($this->getTemplateResource('emptyInterestsMessage.tpl'));
-            $newOutput .= substr($output, $offset);
-
-            $output = $newOutput;
-            $templateMgr->unregisterFilter('output', [$this, 'requestMessageFilter']);
-        }
-        return $output;
-    }
-
 }
