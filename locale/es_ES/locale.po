@@ -3,3 +3,6 @@ msgstr "Campo de selección en el área de Intereses de Revisión"
 
 msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Añade un campo de selección en el área de Intereses de Revisión, con opciones definidas desde la configuración del plugin."
+
+msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
+msgstr "Es necesario seleccionar al menos un intereses de revisión en la pestaña \"Tareas\"."

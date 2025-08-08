@@ -3,3 +3,6 @@ msgstr "Selection Field in Reviewing Interests Area"
 
 msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Adds a selection field in the Reviewing Interests Area, with options defined from the plugin settings."
+
+msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
+msgstr "You must select at least one reviewing interests in the \"Roles\" tab."

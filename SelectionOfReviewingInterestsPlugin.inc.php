@@ -3,6 +3,7 @@
 import('lib.pkp.classes.plugins.GenericPlugin');
 import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsManage');
 import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsActions');
+import('plugins.generic.selectionOfReviewingInterests.classes.hookCallbacks.HookCallbacks');
 
 class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 {
@@ -10,7 +11,10 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $success = parent::register($category, $path);
         if ($success && $this->getEnabled()) {
+            $hookCallbacks = new HookCallbacks($this);
+            HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
+            HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
         }
         return $success;
     }
