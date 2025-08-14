@@ -37,8 +37,4 @@ class SelectionOptionsForm extends Form
     {
         parent::execute(...$functionArgs);
     }
-
-    public function initData(): void
-    {
-    }
 }

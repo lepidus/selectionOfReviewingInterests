@@ -12,8 +12,8 @@
         {include file="controllers/notification/inPlaceNotification.tpl" notificationId="InterestOptionFormNotification"}
 
         {fbvFormArea id="interestOptionForm"}
-            {fbvFormSection label="plugins.generic.selectionOfReviewingInterests.form.optionName"}
-                {fbvElement type="textarea" id="optionName" value=$optionName size=$fbvStyles.size.MEDIUM}
+            {fbvFormSection label="plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"}
+                {fbvElement type="text" id="optionName" value=$optionName size=$fbvStyles.size.MEDIUM}
             {/fbvFormSection}
 
             {fbvFormButtons submitText="common.save"}
