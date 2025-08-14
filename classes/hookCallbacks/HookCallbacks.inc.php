@@ -14,6 +14,32 @@ class HookCallbacks
         $templateMgr = $params[0];
         $template = $params[1];
         $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if ($context) {
+            $contextId = $context->getId();
+            $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
+
+            $optionsArray = array_values($options);
+
+            $interestsOptions = [
+                'interestsOptions' => $optionsArray,
+            ];
+
+            $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
+            $output .= json_encode($optionsArray) . ';';
+
+            $templateMgr->addJavaScript(
+                'interestsOptions',
+                $output,
+                [
+                    'inline' => true,
+                    'contexts' => 'backend',
+                ]
+            );
+        }
 
         if ($template === 'user/profile.tpl') {
             if ($this->userShouldBeRedirected($request)) {
@@ -73,5 +99,14 @@ class HookCallbacks
             $templateMgr->unregisterFilter('output', [$this, 'requestMessageFilter']);
         }
         return $output;
+    }
+
+    public function setupOptionsConfigurationGridHandler(string $hookName, array $params)
+    {
+        $component = &$params[0];
+        if ($component == 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
+            return true;
+        }
+        return false;
     }
 }

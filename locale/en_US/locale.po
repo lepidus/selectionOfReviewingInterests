@@ -6,3 +6,15 @@ msgstr "Adds a selection field in the Reviewing Interests Area, with options def
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "You must select at least one reviewing interests in the \"Roles\" tab."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
+msgstr "Interest option"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.addOption"
+msgstr "Add option"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
+msgstr "Option text"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
+msgstr "Option text is required."

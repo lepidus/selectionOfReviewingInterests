@@ -15,8 +15,14 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
             HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
             HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
             HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
+            HookRegistry::register('LoadComponentHandler', [$hookCallbacks, 'setupOptionsConfigurationGridHandler']);
         }
         return $success;
+    }
+
+    public function getName()
+    {
+        return 'selectionofreviewinginterests';
     }
 
     public function getDisplayName()
