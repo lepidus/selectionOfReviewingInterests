@@ -5,8 +5,11 @@
 </script>
 
 <div id="InterestOption">
-    <form class="pkp_form" id="InterestOptionForm" method="post"
-        action="{url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler" op="updateOption" optionId=$optionId}">
+    {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler" op="updateOption"}}
+    {if $optionId}
+        {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler" op="updateOption" optionId=$optionId}}
+    {/if}
+    <form class="pkp_form" id="InterestOptionForm" method="post" action="{$actionUrl}">
         {csrf}
 
         {include file="controllers/notification/inPlaceNotification.tpl" notificationId="InterestOptionFormNotification"}

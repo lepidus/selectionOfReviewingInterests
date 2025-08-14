@@ -128,10 +128,18 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
     public function updateOption($args, $request)
     {
         $optionId = isset($args['optionId']) ? $args['optionId'] : null;
+
+        if ($optionId === '' || $optionId === '0') {
+            $optionId = null;
+        }
+
         $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterests');
+        $plugin = PluginRegistry::getPlugin(
+            'generic',
+            'selectionofreviewinginterests'
+        );
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
         }
@@ -144,8 +152,13 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $interestOptionForm->readInputData();
 
         if ($interestOptionForm->validate()) {
-            $interestOptionForm->execute();
-            return DAO::getDataChangedEvent();
+            $resultId = $interestOptionForm->execute();
+
+            if ($optionId === null) {
+                $optionId = $resultId;
+            }
+
+            return DAO::getDataChangedEvent($optionId);
         } else {
             return new JSONMessage(true, $interestOptionForm->fetch($request));
         }
@@ -157,7 +170,10 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $contextId = $context->getId();
 
-        $plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterests');
+        $plugin = PluginRegistry::getPlugin(
+            'generic',
+            'selectionofreviewinginterests'
+        );
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
         }
@@ -169,12 +185,15 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
             $plugin->updateSetting($contextId, 'interestOptions', $options);
         }
 
-        return DAO::getDataChangedEvent();
+        return DAO::getDataChangedEvent($optionId);
     }
 
     protected function loadData($request, $filter)
     {
-        $plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterests');
+        $plugin = PluginRegistry::getPlugin(
+            'generic',
+            'selectionofreviewinginterests'
+        );
         if (!$plugin) {
             return array();
         }
@@ -184,7 +203,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
         $gridData = array();
         foreach ($options as $optionId => $optionText) {
-            $gridData[] = array(
+            $gridData[$optionId] = array(
                 'id' => $optionId,
                 'option' => $optionText
             );
@@ -193,13 +212,39 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         return $gridData;
     }
 
+    protected function getRowDataElement($request, &$rowId)
+    {
+        $plugin = PluginRegistry::getPlugin(
+            'generic',
+            'selectionofreviewinginterests'
+        );
+        if (!$plugin) {
+            return null;
+        }
+
+        $contextId = $this->contextId;
+        $options = $plugin->getSetting($contextId, 'interestOptions') ?: array();
+
+        if (isset($options[$rowId])) {
+            return array(
+                'id' => $rowId,
+                'option' => $options[$rowId]
+            );
+        }
+
+        return null;
+    }
+
     protected function getRowInstance()
     {
-        import('plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridRow');
+        import(
+            'plugins.generic.selectionOfReviewingInterests.controllers.grid.' .
+            'SelectionOfReviewingInterestsGridRow'
+        );
         return new SelectionOfReviewingInterestsGridRow();
     }
 
-    private function getContextId()
+    private function _getContextId()
     {
         return $this->contextId;
     }

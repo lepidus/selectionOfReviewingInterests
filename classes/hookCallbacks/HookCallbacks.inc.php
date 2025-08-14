@@ -19,13 +19,17 @@ class HookCallbacks
             $contextId = $context->getId();
             $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
 
+            $optionsArray = array_values($options);
+
             $interestsOptions = [
-                'interestsOptions' => array_values($options),
+                'interestsOptions' => $optionsArray,
             ];
 
             $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
-            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = $.pkp.plugins.generic.selectionOfReviewingInterests || {};';
-            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ' . json_encode(array_values($options)) . ';';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
+            $output .= json_encode($optionsArray) . ';';
 
             $templateMgr->addJavaScript(
                 'interestsOptions',

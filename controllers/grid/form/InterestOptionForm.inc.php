@@ -33,7 +33,7 @@ class InterestOptionForm extends Form
 
     public function initData()
     {
-        if ($this->_optionId !== null) {
+        if ($this->_optionId !== null && $this->_optionId !== '' && $this->_optionId !== '0') {
             $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: array();
             if (isset($options[$this->_optionId])) {
                 $this->setData('optionName', $options[$this->_optionId]);
@@ -51,16 +51,22 @@ class InterestOptionForm extends Form
         $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: array();
         $optionName = $this->getData('optionName');
 
-        if ($this->_optionId === null) {
-            $optionId = uniqid();
+        if ($this->_optionId === null || $this->_optionId === '' || $this->_optionId === '0') {
+            do {
+                $optionId = uniqid();
+            } while (isset($options[$optionId]));
         } else {
             $optionId = $this->_optionId;
         }
 
         $options[$optionId] = $optionName;
-        $this->_plugin->updateSetting($this->_contextId, 'interestOptions', $options);
+        $this->_plugin->updateSetting(
+            $this->_contextId,
+            'interestOptions',
+            $options
+        );
 
-        return true;
+        return $optionId;
     }
 
     public function fetch($request, $template = null, $display = false)
