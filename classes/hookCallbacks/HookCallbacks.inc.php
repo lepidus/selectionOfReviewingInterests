@@ -74,4 +74,13 @@ class HookCallbacks
         }
         return $output;
     }
+
+    public function setupOptionsConfigurationGridHandler(string $hookName, array $params)
+    {
+        $component = &$params[0];
+        if ($component == 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
+            return true;
+        }
+        return false;
+    }
 }
