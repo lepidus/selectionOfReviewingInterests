@@ -14,6 +14,28 @@ class HookCallbacks
         $templateMgr = $params[0];
         $template = $params[1];
         $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if ($context) {
+            $contextId = $context->getId();
+            $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
+
+            $interestsOptions = [
+                'interestsOptions' => array_values($options),
+            ];
+
+            $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = $.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ' . json_encode(array_values($options)) . ';';
+
+            $templateMgr->addJavaScript(
+                'interestsOptions',
+                $output,
+                [
+                    'inline' => true,
+                    'contexts' => 'backend',
+                ]
+            );
+        }
 
         if ($template === 'user/profile.tpl') {
             if ($this->userShouldBeRedirected($request)) {

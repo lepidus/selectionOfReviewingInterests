@@ -6,3 +6,15 @@ msgstr "Añade un campo de selección en el área de Intereses de Revisión, con
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "Es necesario seleccionar al menos un intereses de revisión en la pestaña \"Tareas\"."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
+msgstr "Opción de interés"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.addOption"
+msgstr "Añadir opción"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
+msgstr "Texto de la opción"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
+msgstr "El texto de la opción es obligatorio."

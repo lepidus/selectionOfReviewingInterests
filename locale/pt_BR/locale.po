@@ -6,3 +6,15 @@ msgstr "Adiciona um campo de seleção na Áreas de Interesse de Avaliação, co
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "É necessário selecionar pelo menos uma área de interesse para avaliação na aba \"Papéis\"."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
+msgstr "Opção de interesse"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.addOption"
+msgstr "Adicionar opção"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
+msgstr "Texto da opção"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
+msgstr "O texto da opção é obrigatório."
