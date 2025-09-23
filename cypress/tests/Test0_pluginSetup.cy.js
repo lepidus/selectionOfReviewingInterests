@@ -4,7 +4,7 @@ describe('Setup Selection Of Reviewing Interests plugin', function () {
         cy.contains('a', 'Website').click();
         cy.waitJQuery();
         cy.get('#plugins-button').click();
-        cy.get('input[id^=select-cell-selectionofreviewinginterestsplugin]').check();
-        cy.get('input[id^=select-cell-selectionofreviewinginterestsplugin]').should('be.checked');
+        cy.get('input[id^=select-cell-selectionofreviewinginterests]').check();
+        cy.get('input[id^=select-cell-selectionofreviewinginterests]').should('be.checked');
     })
 });
