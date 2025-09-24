@@ -89,7 +89,8 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterests');
+        $pluginName = 'selectionofreviewinginterestsplugin';
+        $plugin = PluginRegistry::getPlugin('generic', $pluginName);
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
         }
@@ -110,7 +111,8 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterests');
+        $pluginName = 'selectionofreviewinginterestsplugin';
+        $plugin = PluginRegistry::getPlugin('generic', $pluginName);
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
         }

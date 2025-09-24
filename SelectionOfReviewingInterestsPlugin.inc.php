@@ -22,7 +22,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 
     public function getName()
     {
-        return 'selectionofreviewinginterests';
+        return 'selectionofreviewinginterestsplugin';
     }
 
     public function getDisplayName()
