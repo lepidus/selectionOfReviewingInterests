@@ -13,7 +13,7 @@ describe('Enable Selection Of Reviewing Interests plugin', function () {
         cy.waitJQuery();
         cy.get('#plugins-button').click();
 
-        const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterests';
+        const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
 
         cy.get('tr#' + pluginRowId + ' a.show_extras').click();
         cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
