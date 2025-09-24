@@ -140,7 +140,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
         $plugin = PluginRegistry::getPlugin(
             'generic',
-            'selectionofreviewinginterests'
+            'selectionofreviewinginterestsplugin'
         );
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
@@ -174,7 +174,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
         $plugin = PluginRegistry::getPlugin(
             'generic',
-            'selectionofreviewinginterests'
+            'selectionofreviewinginterestsplugin'
         );
         if (!$plugin) {
             return new JSONMessage(false, __('common.error'));
@@ -194,7 +194,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
     {
         $plugin = PluginRegistry::getPlugin(
             'generic',
-            'selectionofreviewinginterests'
+            'selectionofreviewinginterestsplugin'
         );
         if (!$plugin) {
             return array();
@@ -218,7 +218,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
     {
         $plugin = PluginRegistry::getPlugin(
             'generic',
-            'selectionofreviewinginterests'
+            'selectionofreviewinginterestsplugin'
         );
         if (!$plugin) {
             return null;
