@@ -41,18 +41,13 @@ class HookCallbacks
             );
         }
 
-        if ($template === 'user/profile.tpl') {
-            if ($this->userShouldBeRedirected($request)) {
-                $templateMgr->registerFilter('output', [$this, 'requestMessageFilter']);
-            }
-            return;
-        }
-
-        $backendMenuState = $templateMgr->getState('menu');
-        if (!empty($backendMenuState)) {
-            if ($this->userShouldBeRedirected($request)) {
-                $request->redirect(null, 'user', 'profile');
-            }
+        if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
+            $templateMgr->registerFilter(
+                'output', 
+                [$this, 'requestMessageFilter']
+            );
+        } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
+            $request->redirect(null, 'user', 'profile');
         }
     }
 

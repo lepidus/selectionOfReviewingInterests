@@ -18,9 +18,9 @@
                 minLength: 0 
             {rdelim},
             beforeTagAdded: function(event, ui) {ldelim}
-                var availableTags = $("#customInterests").find(".interests").tagit("option", "availableTags");
+                let availableTags = $("#customInterests").find(".interests").tagit("option", "availableTags");
                 console.log("Available tags: " + availableTags);
-                var tagAllowed = $.map(availableTags, function(tag) {ldelim}
+                let tagAllowed = $.map(availableTags, function(tag) {ldelim}
                     return tag.toLowerCase();
                 {rdelim}).indexOf(ui.tagLabel.toLowerCase()) !== -1;
 
