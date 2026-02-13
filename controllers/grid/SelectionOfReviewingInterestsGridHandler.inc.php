@@ -42,6 +42,8 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $this->contextId = $context->getId();
 
+        $this->setTitle('plugins.generic.selectionOfReviewingInterests.configuration.grid.title');
+
         AppLocale::requireComponents(
             LOCALE_COMPONENT_PKP_USER,
             LOCALE_COMPONENT_PKP_MANAGER,

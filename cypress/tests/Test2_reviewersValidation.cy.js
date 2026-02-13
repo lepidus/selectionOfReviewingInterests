@@ -1,10 +1,10 @@
 describe('Reviewers must not use OJS without reviewing interests', function () {
     it('Reviewer without interests login', function () {
         cy.login('agallego', null, 'publicknowledge');
-        cy.get('.pkpNotification').contains('You must select at least one reviewing interests in the "Roles" tab.').should('be.visible');
+        cy.get('.pkpNotification').contains('You must select at least one reviewing interest in the "Roles" tab before you can access the system.').should('be.visible');
 
         cy.get('.app__returnHeaderLink').click();
-        cy.get('.pkpNotification').contains('You must select at least one reviewing interests in the "Roles" tab.').should('be.visible');
+        cy.get('.pkpNotification').contains('You must select at least one reviewing interest in the "Roles" tab before you can access the system.').should('be.visible');
 
         cy.get('#ui-id-5').click();
         cy.get('.interests').click();
