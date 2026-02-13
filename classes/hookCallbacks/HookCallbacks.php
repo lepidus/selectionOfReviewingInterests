@@ -1,29 +1,32 @@
 <?php
 
+namespace APP\plugins\generic\selectionOfReviewingInterests\classes\hookCallbacks;
+
+use APP\core\Application;
+use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin;
+use PKP\security\Role;
+
 class HookCallbacks
 {
-    private $plugin;
+    private SelectionOfReviewingInterestsPlugin $plugin;
+    private ?\Closure $messageFilterCallback = null;
 
-    public function __construct($plugin)
+    public function __construct(SelectionOfReviewingInterestsPlugin $plugin)
     {
         $this->plugin = $plugin;
     }
 
-    public function addChangesOnTemplateDisplaying(string $hookName, array $params)
+    public function addChangesOnTemplateDisplaying(string $hookName, array $params): bool
     {
         $templateMgr = $params[0];
         $template = $params[1];
         $request = Application::get()->getRequest();
         $context = $request->getContext();
+
         if ($context) {
             $contextId = $context->getId();
-            $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
-
+            $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: [];
             $optionsArray = array_values($options);
-
-            $interestsOptions = [
-                'interestsOptions' => $optionsArray,
-            ];
 
             $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
             $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
@@ -42,29 +45,31 @@ class HookCallbacks
         }
 
         if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
-            $templateMgr->registerFilter(
-                'output', 
-                [$this, 'requestMessageFilter']
-            );
+            $this->messageFilterCallback = $this->requestMessageFilter(...);
+            $templateMgr->registerFilter('output', $this->messageFilterCallback);
         } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
             $request->redirect(null, 'user', 'profile');
         }
+
+        return false;
     }
 
-    public function redirectUserAfterLogin(string $hookName, array $params)
+    public function redirectUserAfterLogin(string $hookName, array $params): bool
     {
         $url = &$params[0];
         if (strpos($url, '/submissions') === false) {
-            return;
+            return false;
         }
 
         $request = Application::get()->getRequest();
         if ($this->userShouldBeRedirected($request)) {
-            $url = $request->getDispatcher()->url($request, ROUTE_PAGE, null, 'user', 'profile');
+            $url = $request->getDispatcher()->url($request, Application::ROUTE_PAGE, null, 'user', 'profile');
         }
+
+        return false;
     }
 
-    public function userShouldBeRedirected($request)
+    public function userShouldBeRedirected($request): bool
     {
         $context = $request->getContext();
         $user = $request->getUser();
@@ -73,7 +78,7 @@ class HookCallbacks
             return $role->getId();
         }, $userRoles);
 
-        if (is_null($user) || !in_array(ROLE_ID_REVIEWER, $userRoles)) {
+        if (is_null($user) || !in_array(Role::ROLE_ID_REVIEWER, $userRoles)) {
             return false;
         }
 
@@ -91,17 +96,12 @@ class HookCallbacks
             $newOutput .= substr($output, $offset);
 
             $output = $newOutput;
-            $templateMgr->unregisterFilter('output', [$this, 'requestMessageFilter']);
-        }
-        return $output;
-    }
 
-    public function setupOptionsConfigurationGridHandler(string $hookName, array $params)
-    {
-        $component = &$params[0];
-        if ($component == 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
-            return true;
+            if ($this->messageFilterCallback) {
+                $templateMgr->unregisterFilter('output', $this->messageFilterCallback);
+            }
         }
-        return false;
+
+        return $output;
     }
 }
