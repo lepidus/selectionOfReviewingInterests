@@ -57,7 +57,7 @@ class HookCallbacks
     public function redirectUserAfterLogin(string $hookName, array $params): bool
     {
         $url = &$params[0];
-        if (strpos($url, '/submissions') === false) {
+        if (strpos($url, '/dashboard') === false) {
             return false;
         }
 
