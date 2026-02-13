@@ -1,9 +1,10 @@
 describe('Configure reviewing interests options', function () {
     it('Create options', function () {
         cy.login('dbarnes', null, 'publicknowledge');
-        cy.contains('a', 'Website').click();
+        cy.get('nav').contains('Settings').click();
+        cy.get('nav').contains('Website').click({force: true});
         cy.waitJQuery();
-        cy.get('#plugins-button').click();
+        cy.get('button[id="plugins-button"]').click();
 
         const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
 
