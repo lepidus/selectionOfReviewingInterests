@@ -43,7 +43,7 @@ class HookCallbacks
 
         if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
             $templateMgr->registerFilter(
-                'output', 
+                'output',
                 [$this, 'requestMessageFilter']
             );
         } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
