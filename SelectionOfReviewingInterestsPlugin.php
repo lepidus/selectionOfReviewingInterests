@@ -1,28 +1,47 @@
 <?php
 
-import('lib.pkp.classes.plugins.GenericPlugin');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsManage');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsActions');
-import('plugins.generic.selectionOfReviewingInterests.classes.hookCallbacks.HookCallbacks');
+namespace APP\plugins\generic\selectionOfReviewingInterests;
+
+use APP\core\Application;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\hookCallbacks\HookCallbacks;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsActions;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsManage;
+use APP\plugins\generic\selectionOfReviewingInterests\controllers\grid\SelectionOfReviewingInterestsGridHandler;
+use PKP\plugins\GenericPlugin;
+use PKP\plugins\Hook;
 
 class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 {
     public function register($category, $path, $mainContextId = null)
     {
-        $success = parent::register($category, $path);
-        if ($success && $this->getEnabled()) {
-            $hookCallbacks = new HookCallbacks($this);
-            HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
-            HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
-            HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
-            HookRegistry::register('LoadComponentHandler', [$hookCallbacks, 'setupOptionsConfigurationGridHandler']);
+        $success = parent::register($category, $path, $mainContextId);
+
+        if (Application::isUnderMaintenance()) {
+            return $success;
         }
+
+        if ($success && $this->getEnabled($mainContextId)) {
+            $hookCallbacks = new HookCallbacks($this);
+            Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
+            Hook::add('TemplateResource::getFilename', $this->_overridePluginTemplates(...));
+            Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
+            Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
+        }
+
         return $success;
     }
 
-    public function getName()
+    public function setupGridHandler(string $hookName, array $params): bool
     {
-        return 'selectionofreviewinginterestsplugin';
+        $component = &$params[0];
+        $componentInstance = &$params[2];
+
+        if ($component === 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
+            $componentInstance = new SelectionOfReviewingInterestsGridHandler($this);
+            return true;
+        }
+
+        return false;
     }
 
     public function getDisplayName()
