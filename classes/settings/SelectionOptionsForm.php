@@ -1,6 +1,10 @@
 <?php
 
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\selectionOfReviewingInterests\classes\settings;
+
+use PKP\form\Form;
+use PKP\form\validation\FormValidatorCSRF;
+use PKP\form\validation\FormValidatorPost;
 
 class SelectionOptionsForm extends Form
 {
@@ -11,14 +15,10 @@ class SelectionOptionsForm extends Form
     {
         $this->plugin = $plugin;
         $this->contextId = $contextId;
-        $this->addFormValidators();
 
         $template = 'settings/form.tpl';
         parent::__construct($plugin->getTemplateResource($template));
-    }
 
-    private function addFormValidators(): void
-    {
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));
     }
