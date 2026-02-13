@@ -5,7 +5,13 @@ msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Añade un campo de selección en el área de Intereses de Revisión, con opciones definidas desde la configuración del plugin."
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
-msgstr "Es necesario seleccionar al menos un intereses de revisión en la pestaña \"Tareas\"."
+msgstr "Debe seleccionar al menos un interés de revisión en la pestaña \"Roles\" antes de poder acceder al sistema."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
+msgstr "Defina las opciones de interés de revisión disponibles para los revisores. Estas opciones reemplazan el campo de texto libre de intereses en el perfil del usuario. Los revisores solo podrán seleccionar entre las opciones listadas a continuación. Los revisores que no hayan seleccionado al menos un interés serán redirigidos a su página de perfil al iniciar sesión."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.title"
+msgstr "Opciones de Interés de Revisión"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
 msgstr "Opción de interés"
@@ -15,6 +21,9 @@ msgstr "Añadir opción"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
 msgstr "Texto de la opción"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.description"
+msgstr "Ingrese el texto que aparecerá como una opción de interés de revisión seleccionable para los revisores en su perfil."
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "El texto de la opción es obligatorio."

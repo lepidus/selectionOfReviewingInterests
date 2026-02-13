@@ -50,6 +50,8 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $this->contextId = $context->getId();
 
+        $this->setTitle('plugins.generic.selectionOfReviewingInterests.configuration.grid.title');
+
         $cellProvider = new SelectionOfReviewingInterestsGridCellProvider();
 
         $this->addColumn(
