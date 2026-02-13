@@ -5,7 +5,13 @@ msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Adds a selection field in the Reviewing Interests Area, with options defined from the plugin settings."
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
-msgstr "You must select at least one reviewing interests in the \"Roles\" tab."
+msgstr "You must select at least one reviewing interest in the \"Roles\" tab before you can access the system."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
+msgstr "Define the reviewing interest options available to reviewers. These options replace the free-text interests field in the user profile. Reviewers will only be able to select from the options listed below. Reviewers who have not selected at least one interest will be redirected to their profile page upon login."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.title"
+msgstr "Reviewing Interest Options"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
 msgstr "Interest option"
@@ -15,6 +21,9 @@ msgstr "Add option"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
 msgstr "Option text"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.description"
+msgstr "Enter the text that will appear as a selectable reviewing interest option for reviewers in their profile."
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "Option text is required."

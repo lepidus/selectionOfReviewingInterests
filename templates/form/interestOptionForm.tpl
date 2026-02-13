@@ -16,6 +16,7 @@
 
         {fbvFormArea id="interestOptionForm"}
             {fbvFormSection label="plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"}
+                <p class="pkp_help">{translate key="plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.description"}</p>
                 {fbvElement type="text" id="optionName" value=$optionName size=$fbvStyles.size.MEDIUM}
             {/fbvFormSection}
 
