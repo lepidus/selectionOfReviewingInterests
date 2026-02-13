@@ -3,21 +3,19 @@ describe('Enable Selection Of Reviewing Interests plugin', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('nav').contains('Settings').click();
         cy.get('nav').contains('Website').click({force: true});
-        cy.waitJQuery();
         cy.get('button[id="plugins-button"]').click();
-        cy.get('input[id^=select-cell-selectionofreviewinginterests]').check();
+        cy.get('input[id^=select-cell-selectionofreviewinginterests]', {timeout: 20000}).check();
         cy.get('input[id^=select-cell-selectionofreviewinginterests]').should('be.checked');
     })
     it('View reviewing interests options configuration', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('nav').contains('Settings').click();
         cy.get('nav').contains('Website').click({force: true});
-        cy.waitJQuery();
         cy.get('button[id="plugins-button"]').click();
 
         const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
 
-        cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+        cy.get('tr#' + pluginRowId + ' a.show_extras', {timeout: 20000}).click();
         cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
         cy.get('[data-cy="sidemodal-header"]').contains('Selection Field in Reviewing Interests Area');
         cy.waitJQuery();
