@@ -2,9 +2,15 @@
 
 This plugin adds a selection field in the Reviewing Interests Area, with options defined from the plugin settings.
 
+Reviewers are redirected to the Reviewing Interests Area when they log in, if they have no reviewing interests defined.
+
 ## Compatibility
 
-The latest release of this plugin is compatible with OJS 3.3.0.x
+This plugin is compatible with OJS in the following versions:
+
+- 3.3.0.x (v1)
+- 3.4.0.x (v2)
+- 3.5.0.x (v2)
 
 ## Plugin Download
 
