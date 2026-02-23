@@ -1,8 +1,8 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridCellProvider');
-import('lib.pkp.classes.linkAction.LinkAction');
-import('lib.pkp.classes.linkAction.request.AjaxAction');
+namespace APP\plugins\generic\selectionOfReviewingInterests\controllers\grid;
+
+use PKP\controllers\grid\GridCellProvider;
 
 class SelectionOfReviewingInterestsGridCellProvider extends GridCellProvider
 {
@@ -13,7 +13,7 @@ class SelectionOfReviewingInterestsGridCellProvider extends GridCellProvider
 
         switch ($columnId) {
             case 'option':
-                return array('label' => $option['option']);
+                return ['label' => $option['option']];
             default:
                 break;
         }

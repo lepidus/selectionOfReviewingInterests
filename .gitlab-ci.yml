@@ -3,7 +3,12 @@ variables:
 
 include:
   - project: 'documentacao-e-tarefas/modelosparaintegracaocontinua'
-    ref: stable-3_3_0
+    ref: stable-3_5_0
     file:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
+
+# Plugin expected behaviour is different from OJS default for Reviewers, breaks native tests.
+ojs_integration_tests:
+  rules:
+    - when: never

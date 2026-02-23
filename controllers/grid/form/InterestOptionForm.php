@@ -1,6 +1,12 @@
 <?php
 
-import('lib.pkp.classes.form.Form');
+namespace APP\plugins\generic\selectionOfReviewingInterests\controllers\grid\form;
+
+use APP\template\TemplateManager;
+use PKP\form\Form;
+use PKP\form\validation\FormValidator;
+use PKP\form\validation\FormValidatorCSRF;
+use PKP\form\validation\FormValidatorPost;
 
 class InterestOptionForm extends Form
 {
@@ -15,7 +21,7 @@ class InterestOptionForm extends Form
         $this->_optionId = $optionId;
 
         if (!$plugin) {
-            fatalError('Plugin is required');
+            throw new \Exception('Plugin is required');
         }
 
         parent::__construct($plugin->getTemplateResource('form/interestOptionForm.tpl'));
@@ -24,7 +30,7 @@ class InterestOptionForm extends Form
             $this,
             'optionName',
             'required',
-            'plugins.generic.selectionOfReviewingInterests.form.optionName.required'
+            'plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required'
         ));
 
         $this->addCheck(new FormValidatorPost($this));
@@ -34,7 +40,7 @@ class InterestOptionForm extends Form
     public function initData()
     {
         if ($this->_optionId !== null && $this->_optionId !== '' && $this->_optionId !== '0') {
-            $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: array();
+            $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: [];
             if (isset($options[$this->_optionId])) {
                 $this->setData('optionName', $options[$this->_optionId]);
             }
@@ -43,12 +49,12 @@ class InterestOptionForm extends Form
 
     public function readInputData()
     {
-        $this->readUserVars(array('optionName'));
+        $this->readUserVars(['optionName']);
     }
 
     public function execute(...$functionArgs)
     {
-        $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: array();
+        $options = $this->_plugin->getSetting($this->_contextId, 'interestOptions') ?: [];
         $optionName = $this->getData('optionName');
 
         if ($this->_optionId === null || $this->_optionId === '' || $this->_optionId === '0') {

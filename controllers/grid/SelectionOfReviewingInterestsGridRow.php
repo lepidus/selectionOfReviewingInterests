@@ -1,8 +1,11 @@
 <?php
 
-import('lib.pkp.classes.controllers.grid.GridRow');
-import('lib.pkp.classes.linkAction.request.AjaxModal');
-import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
+namespace APP\plugins\generic\selectionOfReviewingInterests\controllers\grid;
+
+use PKP\controllers\grid\GridRow;
+use PKP\linkAction\LinkAction;
+use PKP\linkAction\request\AjaxModal;
+use PKP\linkAction\request\RemoteActionConfirmationModal;
 
 class SelectionOfReviewingInterestsGridRow extends GridRow
 {
@@ -24,7 +27,7 @@ class SelectionOfReviewingInterestsGridRow extends GridRow
                         null,
                         'editOption',
                         null,
-                        array('optionId' => $optionId)
+                        ['optionId' => $optionId]
                     ),
                     __('grid.action.edit'),
                     'modal_edit',
@@ -48,7 +51,7 @@ class SelectionOfReviewingInterestsGridRow extends GridRow
                         null,
                         'deleteOption',
                         null,
-                        array('optionId' => $optionId)
+                        ['optionId' => $optionId]
                     ),
                     'modal_delete'
                 ),

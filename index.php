@@ -1,4 +1,3 @@
 <?php
 
-require_once('SelectionOfReviewingInterestsPlugin.inc.php');
-return new SelectionOfReviewingInterestsPlugin();
+return new \APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin();
