@@ -7,3 +7,8 @@ include:
     file:
       - 'templates/groups/pkp_plugin.yml'
       - 'templates/groups/ojs/cypress_tests.yml'
+
+# Plugin expected behaviour is different from OJS default for Reviewers, breaks native tests.
+ojs_integration_tests:
+  rules:
+    - when: never

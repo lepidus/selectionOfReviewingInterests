@@ -5,7 +5,13 @@ msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Adiciona um campo de seleção na Áreas de Interesse de Avaliação, com as opções sendo definidas a partir das configurações do plugin."
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
-msgstr "É necessário selecionar pelo menos uma área de interesse para avaliação na aba \"Papéis\"."
+msgstr "É necessário selecionar pelo menos uma área de interesse para avaliação na aba \"Papéis\" antes de acessar o sistema."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
+msgstr "Defina as opções de interesse de avaliação disponíveis para os avaliadores. Essas opções substituem o campo de texto livre de interesses no perfil do usuário. Os avaliadores só poderão selecionar entre as opções listadas abaixo. Avaliadores que não tiverem selecionado pelo menos um interesse serão redirecionados para a página de perfil ao fazer login."
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.title"
+msgstr "Opções de Interesse de Avaliação"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.grid.column.option"
 msgstr "Opção de interesse"
@@ -15,6 +21,9 @@ msgstr "Adicionar opção"
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText"
 msgstr "Texto da opção"
+
+msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.description"
+msgstr "Insira o texto que aparecerá como uma opção de interesse de avaliação selecionável para os avaliadores em seu perfil."
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "O texto da opção é obrigatório."
