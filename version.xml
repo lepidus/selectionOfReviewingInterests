@@ -11,8 +11,8 @@
 <version>
 	<application>selectionOfReviewingInterests</application>
 	<type>plugins.generic</type>
-	<release>1.0.0.0</release>
-	<date>2026-02-06</date>
+	<release>1.0.0.1</release>
+	<date>2026-02-23</date>
 	<lazy-load>1</lazy-load>
 	<class>SelectionOfReviewingInterestsPlugin</class>
 </version>
