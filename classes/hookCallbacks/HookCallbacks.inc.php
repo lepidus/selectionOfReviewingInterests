@@ -41,6 +41,13 @@ class HookCallbacks
             );
         }
 
+        if ($template === 'frontend/pages/userRegister.tpl' && $context) {
+            $templateMgr->registerFilter(
+                'output',
+                [$this, 'registrationInterestsFilter']
+            );
+        }
+
         if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
             $templateMgr->registerFilter(
                 'output',
@@ -93,6 +100,18 @@ class HookCallbacks
             $output = $newOutput;
             $templateMgr->unregisterFilter('output', [$this, 'requestMessageFilter']);
         }
+        return $output;
+    }
+
+    public function registrationInterestsFilter($output, $templateMgr)
+    {
+        $pattern = '/<div\s+id="reviewerInterests"[^>]*>.*?<\/div>/s';
+
+        if (preg_match($pattern, $output)) {
+            $output = preg_replace($pattern, '', $output);
+            $templateMgr->unregisterFilter('output', [$this, 'registrationInterestsFilter']);
+        }
+
         return $output;
     }
 
