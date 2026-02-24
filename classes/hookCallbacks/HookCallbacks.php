@@ -10,6 +10,7 @@ class HookCallbacks
 {
     private SelectionOfReviewingInterestsPlugin $plugin;
     private ?\Closure $messageFilterCallback = null;
+    private ?\Closure $registrationFilterCallback = null;
 
     public function __construct(SelectionOfReviewingInterestsPlugin $plugin)
     {
@@ -42,6 +43,11 @@ class HookCallbacks
                     'contexts' => 'backend',
                 ]
             );
+        }
+
+        if ($template === 'frontend/pages/userRegister.tpl' && $context) {
+            $this->registrationFilterCallback = $this->registrationInterestsFilter(...);
+            $templateMgr->registerFilter('output', $this->registrationFilterCallback);
         }
 
         if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
@@ -99,6 +105,21 @@ class HookCallbacks
 
             if ($this->messageFilterCallback) {
                 $templateMgr->unregisterFilter('output', $this->messageFilterCallback);
+            }
+        }
+
+        return $output;
+    }
+
+    public function registrationInterestsFilter($output, $templateMgr)
+    {
+        $pattern = '/<div\s+id="reviewerInterests"[^>]*>.*?<\/div>/s';
+
+        if (preg_match($pattern, $output)) {
+            $output = preg_replace($pattern, '', $output);
+
+            if ($this->registrationFilterCallback) {
+                $templateMgr->unregisterFilter('output', $this->registrationFilterCallback);
             }
         }
 
