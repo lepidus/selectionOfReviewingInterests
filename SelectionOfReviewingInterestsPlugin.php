@@ -7,6 +7,7 @@ use APP\plugins\generic\selectionOfReviewingInterests\classes\hookCallbacks\Hook
 use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsActions;
 use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsManage;
 use APP\plugins\generic\selectionOfReviewingInterests\controllers\grid\SelectionOfReviewingInterestsGridHandler;
+use APP\template\TemplateManager;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
 
@@ -23,7 +24,6 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             $hookCallbacks = new HookCallbacks($this);
             Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
-            Hook::add('TemplateResource::getFilename', $this->_overridePluginTemplates(...));
             Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
         }
@@ -76,5 +76,12 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
+    }
+
+    public function setEnabled($enabled)
+    {
+        parent::setEnabled($enabled);
+        $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+        $templateMgr->clearCompiledTemplate();
     }
 }
