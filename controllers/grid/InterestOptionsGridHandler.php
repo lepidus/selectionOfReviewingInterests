@@ -13,7 +13,7 @@ use PKP\linkAction\request\AjaxModal;
 use PKP\security\authorization\ContextAccessPolicy;
 use PKP\security\Role;
 
-class SelectionOfReviewingInterestsGridHandler extends GridHandler
+class InterestOptionsGridHandler extends GridHandler
 {
     public SelectionOfReviewingInterestsPlugin $plugin;
     private $contextId;
@@ -52,7 +52,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
         $this->setTitle('plugins.generic.selectionOfReviewingInterests.configuration.grid.title');
 
-        $cellProvider = new SelectionOfReviewingInterestsGridCellProvider();
+        $cellProvider = new InterestOptionsGridCellProvider();
 
         $this->addColumn(
             new GridColumn(
@@ -197,6 +197,6 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
     protected function getRowInstance()
     {
-        return new SelectionOfReviewingInterestsGridRow();
+        return new InterestOptionsGridRow();
     }
 }

@@ -5,7 +5,7 @@ namespace APP\plugins\generic\selectionOfReviewingInterests\classes\settings;
 use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 
-class SelectionOfReviewingInterestsActions
+class Actions
 {
     public $plugin;
 

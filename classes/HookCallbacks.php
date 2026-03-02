@@ -1,6 +1,6 @@
 <?php
 
-namespace APP\plugins\generic\selectionOfReviewingInterests\classes\hookCallbacks;
+namespace APP\plugins\generic\selectionOfReviewingInterests\classes;
 
 use APP\core\Application;
 use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin;

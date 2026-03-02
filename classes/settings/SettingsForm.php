@@ -6,7 +6,7 @@ use PKP\form\Form;
 use PKP\form\validation\FormValidatorCSRF;
 use PKP\form\validation\FormValidatorPost;
 
-class SelectionOptionsForm extends Form
+class SettingsForm extends Form
 {
     private $plugin;
     private $contextId;
@@ -16,8 +16,7 @@ class SelectionOptionsForm extends Form
         $this->plugin = $plugin;
         $this->contextId = $contextId;
 
-        $template = 'settings/form.tpl';
-        parent::__construct($plugin->getTemplateResource($template));
+        parent::__construct($plugin->getTemplateResource('settingsForm.tpl'));
 
         $this->addCheck(new FormValidatorPost($this));
         $this->addCheck(new FormValidatorCSRF($this));

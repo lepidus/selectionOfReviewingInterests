@@ -7,7 +7,7 @@ use PKP\linkAction\LinkAction;
 use PKP\linkAction\request\AjaxModal;
 use PKP\linkAction\request\RemoteActionConfirmationModal;
 
-class SelectionOfReviewingInterestsGridRow extends GridRow
+class InterestOptionsGridRow extends GridRow
 {
     public function initialize($request, $template = null)
     {
