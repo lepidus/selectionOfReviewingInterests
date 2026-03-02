@@ -19,7 +19,7 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
         cy.url().should('include', '/dashboard');
     });
 
-    it('Users without reviewer role must use OJS with any problems', function () {
+    it('Users without reviewer role can use OJS with any problems', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.url().should('include', '/dashboard');
     });
