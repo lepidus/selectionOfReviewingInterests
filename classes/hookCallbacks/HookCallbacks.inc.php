@@ -15,15 +15,16 @@ class HookCallbacks
         $template = $params[1];
         $request = Application::get()->getRequest();
         $context = $request->getContext();
-        if ($context) {
-            $contextId = $context->getId();
+
+        if (!$context) {
+            return false;
+        }
+
+        $contextId = $context->getId();
+
+        if ($template === 'user/profile.tpl') {
             $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
-
             $optionsArray = array_values($options);
-
-            $interestsOptions = [
-                'interestsOptions' => $optionsArray,
-            ];
 
             $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
             $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
@@ -39,23 +40,34 @@ class HookCallbacks
                     'contexts' => 'backend',
                 ]
             );
-        }
 
-        if ($template === 'frontend/pages/userRegister.tpl' && $context) {
+            $patchScriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
+
+            $templateMgr->addJavaScript(
+                'interestsTagitPatch',
+                $patchScriptUrl,
+                [
+                    'contexts' => 'backend',
+                    'priority' => STYLE_SEQUENCE_LATE,
+                ]
+            );
+
+            if ($this->userShouldBeRedirected($request)) {
+                $templateMgr->registerFilter(
+                    'output',
+                    [$this, 'requestMessageFilter']
+                );
+            }
+        } elseif ($template === 'frontend/pages/userRegister.tpl') {
             $templateMgr->registerFilter(
                 'output',
                 [$this, 'registrationInterestsFilter']
             );
-        }
-
-        if ($template === 'user/profile.tpl' && $this->userShouldBeRedirected($request)) {
-            $templateMgr->registerFilter(
-                'output',
-                [$this, 'requestMessageFilter']
-            );
         } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
             $request->redirect(null, 'user', 'profile');
         }
+
+        return false;
     }
 
     public function redirectUserAfterLogin(string $hookName, array $params)
