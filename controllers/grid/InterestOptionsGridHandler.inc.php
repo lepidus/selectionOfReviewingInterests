@@ -2,11 +2,12 @@
 
 import('lib.pkp.classes.controllers.grid.GridHandler');
 import('lib.pkp.classes.core.JSONMessage');
-import('plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridCellProvider');
+import('plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridCellProvider');
 import('plugins.generic.selectionOfReviewingInterests.controllers.grid.form.InterestOptionForm');
 
-class SelectionOfReviewingInterestsGridHandler extends GridHandler
+class InterestOptionsGridHandler extends GridHandler
 {
+    private $plugin;
     private $contextId;
 
     public function __construct()
@@ -42,6 +43,8 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
         $context = $request->getContext();
         $this->contextId = $context->getId();
 
+        $this->plugin = PluginRegistry::getPlugin('generic', 'selectionofreviewinginterestsplugin');
+
         $this->setTitle('plugins.generic.selectionOfReviewingInterests.configuration.grid.title');
 
         AppLocale::requireComponents(
@@ -50,7 +53,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
             LOCALE_COMPONENT_APP_MANAGER
         );
 
-        $cellProvider = new SelectionOfReviewingInterestsGridCellProvider();
+        $cellProvider = new InterestOptionsGridCellProvider();
 
         $this->addColumn(
             new GridColumn(
@@ -88,18 +91,11 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
     public function addOption($args, $request)
     {
-        $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $pluginName = 'selectionofreviewinginterestsplugin';
-        $plugin = PluginRegistry::getPlugin('generic', $pluginName);
-        if (!$plugin) {
-            return new JSONMessage(false, __('common.error'));
-        }
-
         $interestOptionForm = new InterestOptionForm(
-            $plugin,
-            $context->getId(),
+            $this->plugin,
+            $this->contextId,
             null
         );
         $interestOptionForm->initData();
@@ -110,18 +106,11 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
     public function editOption($args, $request)
     {
         $optionId = isset($args['optionId']) ? $args['optionId'] : null;
-        $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $pluginName = 'selectionofreviewinginterestsplugin';
-        $plugin = PluginRegistry::getPlugin('generic', $pluginName);
-        if (!$plugin) {
-            return new JSONMessage(false, __('common.error'));
-        }
-
         $interestOptionForm = new InterestOptionForm(
-            $plugin,
-            $context->getId(),
+            $this->plugin,
+            $this->contextId,
             $optionId
         );
         $interestOptionForm->initData();
@@ -137,20 +126,11 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
             $optionId = null;
         }
 
-        $context = $request->getContext();
         $this->setupTemplate($request);
 
-        $plugin = PluginRegistry::getPlugin(
-            'generic',
-            'selectionofreviewinginterestsplugin'
-        );
-        if (!$plugin) {
-            return new JSONMessage(false, __('common.error'));
-        }
-
         $interestOptionForm = new InterestOptionForm(
-            $plugin,
-            $context->getId(),
+            $this->plugin,
+            $this->contextId,
             $optionId
         );
         $interestOptionForm->readInputData();
@@ -171,22 +151,12 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
     public function deleteOption($args, $request)
     {
         $optionId = $request->getUserVar('optionId');
-        $context = $request->getContext();
-        $contextId = $context->getId();
 
-        $plugin = PluginRegistry::getPlugin(
-            'generic',
-            'selectionofreviewinginterestsplugin'
-        );
-        if (!$plugin) {
-            return new JSONMessage(false, __('common.error'));
-        }
-
-        $options = $plugin->getSetting($contextId, 'interestOptions') ?: array();
+        $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
         if (isset($options[$optionId])) {
             unset($options[$optionId]);
-            $plugin->updateSetting($contextId, 'interestOptions', $options);
+            $this->plugin->updateSetting($this->contextId, 'interestOptions', $options);
         }
 
         return DAO::getDataChangedEvent($optionId);
@@ -194,16 +164,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
     protected function loadData($request, $filter)
     {
-        $plugin = PluginRegistry::getPlugin(
-            'generic',
-            'selectionofreviewinginterestsplugin'
-        );
-        if (!$plugin) {
-            return array();
-        }
-
-        $contextId = $this->contextId;
-        $options = $plugin->getSetting($contextId, 'interestOptions') ?: array();
+        $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
         $gridData = array();
         foreach ($options as $optionId => $optionText) {
@@ -218,16 +179,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
     protected function getRowDataElement($request, &$rowId)
     {
-        $plugin = PluginRegistry::getPlugin(
-            'generic',
-            'selectionofreviewinginterestsplugin'
-        );
-        if (!$plugin) {
-            return null;
-        }
-
-        $contextId = $this->contextId;
-        $options = $plugin->getSetting($contextId, 'interestOptions') ?: array();
+        $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
         if (isset($options[$rowId])) {
             return array(
@@ -241,15 +193,7 @@ class SelectionOfReviewingInterestsGridHandler extends GridHandler
 
     protected function getRowInstance()
     {
-        import(
-            'plugins.generic.selectionOfReviewingInterests.controllers.grid.' .
-            'SelectionOfReviewingInterestsGridRow'
-        );
-        return new SelectionOfReviewingInterestsGridRow();
-    }
-
-    private function _getContextId()
-    {
-        return $this->contextId;
+        import('plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridRow');
+        return new InterestOptionsGridRow();
     }
 }

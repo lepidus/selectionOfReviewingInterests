@@ -19,7 +19,7 @@ describe('Configure reviewing interests options', function () {
         ];
 
         options.forEach((optionText) => {
-            cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-selectionofreviewinginterestsgrid-addOption-button-]')
+            cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
                 .contains('Add option')
                 .click();
 

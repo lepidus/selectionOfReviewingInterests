@@ -1,9 +1,9 @@
 <?php
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsManage');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsActions');
-import('plugins.generic.selectionOfReviewingInterests.classes.hookCallbacks.HookCallbacks');
+import('plugins.generic.selectionOfReviewingInterests.classes.settings.Manage');
+import('plugins.generic.selectionOfReviewingInterests.classes.settings.Actions');
+import('plugins.generic.selectionOfReviewingInterests.classes.HookCallbacks');
 
 class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 {
@@ -13,7 +13,6 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         if ($success && $this->getEnabled()) {
             $hookCallbacks = new HookCallbacks($this);
             HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
-            HookRegistry::register('TemplateResource::getFilename', array($this, '_overridePluginTemplates'));
             HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
             HookRegistry::register('LoadComponentHandler', [$hookCallbacks, 'setupOptionsConfigurationGridHandler']);
         }
@@ -37,13 +36,13 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 
     public function getActions($request, $actionArgs)
     {
-        $actions = new SelectionOfReviewingInterestsActions($this);
+        $actions = new Actions($this);
         return $actions->execute($request, $actionArgs, parent::getActions($request, $actionArgs));
     }
 
     public function manage($args, $request)
     {
-        $manage = new SelectionOfReviewingInterestsManage($this);
+        $manage = new Manage($this);
         return $manage->execute($args, $request);
     }
 
@@ -57,5 +56,12 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
+    }
+
+    public function setEnabled($enabled)
+    {
+        parent::setEnabled($enabled);
+        $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+        $templateMgr->clearCompiledTemplate();
     }
 }
