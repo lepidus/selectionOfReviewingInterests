@@ -20,49 +20,14 @@ class HookCallbacks
             return false;
         }
 
-        $contextId = $context->getId();
-
         if ($template === 'user/profile.tpl') {
-            $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
-            $optionsArray = array_values($options);
-
-            $output = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
-            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
-            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
-            $output .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
-            $output .= json_encode($optionsArray) . ';';
-
-            $templateMgr->addJavaScript(
-                'interestsOptions',
-                $output,
-                [
-                    'inline' => true,
-                    'contexts' => 'backend',
-                ]
-            );
-
-            $patchScriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
-
-            $templateMgr->addJavaScript(
-                'interestsTagitPatch',
-                $patchScriptUrl,
-                [
-                    'contexts' => 'backend',
-                    'priority' => STYLE_SEQUENCE_LATE,
-                ]
-            );
+            $this->addInterestsScripts($templateMgr, $context->getId());
 
             if ($this->userShouldBeRedirected($request)) {
-                $templateMgr->registerFilter(
-                    'output',
-                    [$this, 'requestMessageFilter']
-                );
+                $this->addRedirectMessageFilter($templateMgr);
             }
         } elseif ($template === 'frontend/pages/userRegister.tpl') {
-            $templateMgr->registerFilter(
-                'output',
-                [$this, 'registrationInterestsFilter']
-            );
+            $this->addRegistrationFilter($templateMgr);
         } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
             $request->redirect(null, 'user', 'profile');
         }
@@ -134,5 +99,54 @@ class HookCallbacks
             return true;
         }
         return false;
+    }
+
+    private function addInterestsScripts($templateMgr, $contextId)
+    {
+        $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
+        $optionsArray = array_values($options);
+
+        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
+        $inlineScript .= json_encode($optionsArray) . ';';
+
+        $templateMgr->addJavaScript(
+            'interestsOptions',
+            $inlineScript,
+            [
+                'inline' => true,
+                'contexts' => 'backend',
+            ]
+        );
+
+        $request = Application::get()->getRequest();
+        $patchScriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
+
+        $templateMgr->addJavaScript(
+            'interestsTagitPatch',
+            $patchScriptUrl,
+            [
+                'contexts' => 'backend',
+                'priority' => STYLE_SEQUENCE_LATE,
+            ]
+        );
+    }
+
+    private function addRedirectMessageFilter($templateMgr)
+    {
+        $templateMgr->registerFilter(
+            'output',
+            [$this, 'requestMessageFilter']
+        );
+    }
+
+    private function addRegistrationFilter($templateMgr)
+    {
+        $templateMgr->registerFilter(
+            'output',
+            [$this, 'registrationInterestsFilter']
+        );
     }
 }
