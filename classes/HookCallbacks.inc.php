@@ -95,7 +95,7 @@ class HookCallbacks
     public function setupOptionsConfigurationGridHandler(string $hookName, array $params)
     {
         $component = &$params[0];
-        if ($component == 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
+        if ($component == 'plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridHandler') {
             return true;
         }
         return false;

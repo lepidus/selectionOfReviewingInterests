@@ -4,7 +4,7 @@ import('lib.pkp.classes.controllers.grid.GridCellProvider');
 import('lib.pkp.classes.linkAction.LinkAction');
 import('lib.pkp.classes.linkAction.request.AjaxAction');
 
-class SelectionOfReviewingInterestsGridCellProvider extends GridCellProvider
+class InterestOptionsGridCellProvider extends GridCellProvider
 {
     public function getTemplateVarsFromRowColumn($row, $column)
     {

@@ -1,6 +1,6 @@
 <?php
 
-class SelectionOfReviewingInterestsManage
+class Manage
 {
     public $plugin;
 
@@ -18,8 +18,8 @@ class SelectionOfReviewingInterestsManage
         switch ($request->getUserVar('verb')) {
             case 'settings':
                 $context = $request->getContext();
-                import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOptionsForm');
-                $form = new SelectionOptionsForm($this->plugin, $context->getId());
+                import('plugins.generic.selectionOfReviewingInterests.classes.settings.SettingsForm');
+                $form = new SettingsForm($this->plugin, $context->getId());
                 $form->initData();
                 if ($request->getUserVar('save')) {
                     $form->readInputData();

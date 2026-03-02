@@ -4,7 +4,7 @@ import('lib.pkp.classes.controllers.grid.GridRow');
 import('lib.pkp.classes.linkAction.request.AjaxModal');
 import('lib.pkp.classes.linkAction.request.RemoteActionConfirmationModal');
 
-class SelectionOfReviewingInterestsGridRow extends GridRow
+class InterestOptionsGridRow extends GridRow
 {
     public function initialize($request, $template = null)
     {

@@ -5,9 +5,9 @@
 </script>
 
 <div id="InterestOption">
-    {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler" op="updateOption"}}
+    {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridHandler" op="updateOption"}}
     {if $optionId}
-        {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler" op="updateOption" optionId=$optionId}}
+        {assign var="actionUrl" value={url router=$smarty.const.ROUTE_COMPONENT component="plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridHandler" op="updateOption" optionId=$optionId}}
     {/if}
     <form class="pkp_form" id="InterestOptionForm" method="post" action="{$actionUrl}">
         {csrf}
