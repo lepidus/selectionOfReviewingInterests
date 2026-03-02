@@ -7,7 +7,7 @@ describe('Configure reviewing interests options', function () {
 
         const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
 
-        cy.get('tr#' + pluginRowId + ' a.show_extras', {timeout: 20000}).click();
+        cy.get('tr#' + pluginRowId + ' a.show_extras').click();
         cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
 
         const options = [
@@ -19,7 +19,7 @@ describe('Configure reviewing interests options', function () {
         ];
 
         options.forEach((optionText) => {
-            cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-selectionofreviewinginterestsgrid-addOption-button-]')
+            cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
                 .contains('Add option')
                 .click();
 
