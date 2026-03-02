@@ -57,4 +57,11 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
     }
+
+    public function setEnabled($enabled)
+    {
+        parent::setEnabled($enabled);
+        $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+        $templateMgr->clearCompiledTemplate();
+    }
 }
