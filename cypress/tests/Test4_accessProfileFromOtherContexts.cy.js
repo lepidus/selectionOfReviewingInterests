@@ -6,6 +6,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('/index.php/index/admin/contexts');
 		cy.get('div[id=contextGridContainer]').find('a').contains('Create').click();
 
+		cy.wait(1000); // Wait for the modal to open
 		cy.get('input[name="name-en_US"]').type('Second Journal', {delay: 0});
 		cy.get('input[name=acronym-en_US]').type('SJ', {delay: 0});
 		cy.get('span').contains('Enable this journal').siblings('input').check();
