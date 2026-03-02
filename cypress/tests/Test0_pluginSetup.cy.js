@@ -19,7 +19,7 @@ describe('Enable Selection Of Reviewing Interests plugin', function () {
         cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
         cy.get('.pkp_modal_panel > :nth-child(1)').contains('Selection Field in Reviewing Interests Area');
         cy.waitJQuery();
-        cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-selectionofreviewinginterestsgrid-addOption-button-]').contains('Add option').click();
+        cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]').contains('Add option').click();
         cy.get('input[id^=optionName-]').should('be.visible');
     });
 });
