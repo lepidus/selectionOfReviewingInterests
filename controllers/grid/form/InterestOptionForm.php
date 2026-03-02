@@ -24,7 +24,7 @@ class InterestOptionForm extends Form
             throw new \Exception('Plugin is required');
         }
 
-        parent::__construct($plugin->getTemplateResource('form/interestOptionForm.tpl'));
+        parent::__construct($plugin->getTemplateResource('interestOptionForm.tpl'));
 
         $this->addCheck(new FormValidator(
             $this,

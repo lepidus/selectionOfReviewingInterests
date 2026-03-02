@@ -6,7 +6,7 @@ use APP\notification\NotificationManager;
 use PKP\core\JSONMessage;
 use PKP\notification\Notification;
 
-class SelectionOfReviewingInterestsManage
+class Manage
 {
     public $plugin;
 
@@ -23,7 +23,7 @@ class SelectionOfReviewingInterestsManage
         switch ($request->getUserVar('verb')) {
             case 'settings':
                 $context = $request->getContext();
-                $form = new SelectionOptionsForm($this->plugin, $context->getId());
+                $form = new SettingsForm($this->plugin, $context->getId());
                 $form->initData();
 
                 if ($request->getUserVar('save')) {

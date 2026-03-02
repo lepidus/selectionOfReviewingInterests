@@ -4,7 +4,7 @@ namespace APP\plugins\generic\selectionOfReviewingInterests\controllers\grid;
 
 use PKP\controllers\grid\GridCellProvider;
 
-class SelectionOfReviewingInterestsGridCellProvider extends GridCellProvider
+class InterestOptionsGridCellProvider extends GridCellProvider
 {
     public function getTemplateVarsFromRowColumn($row, $column)
     {

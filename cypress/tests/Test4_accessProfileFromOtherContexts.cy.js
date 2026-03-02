@@ -1,0 +1,48 @@
+describe('Accessing profile from other contexts works normally', function () {
+	const secondJournalPath = 'secondjournal';
+
+	it('Creates a second journal', function () {
+		cy.login('admin', 'admin');
+		cy.visit('/index.php/index/admin/contexts');
+		cy.get('div[id=contextGridContainer]').find('a').contains('Create').click();
+
+		cy.get('input[name="name-en"]').type('Second Journal', {delay: 0});
+		cy.get('input[name=acronym-en]').type('SJ', {delay: 0});
+		cy.get('span').contains('Enable this journal').siblings('input').check();
+		cy.get('input[name="supportedLocales"][value="en"]').check();
+		cy.get('input[name="primaryLocale"][value="en"]').check();
+		cy.get('select[id=context-country-control]').select('Iceland');
+		cy.get('input[name=contactName]').type('Test Contact', {delay: 0});
+		cy.get('input[name=contactEmail]').type('test@mailinator.com', {delay: 0});
+		cy.get('input[name=urlPath]').clear().type(secondJournalPath, {delay: 0});
+		cy.get('button').contains('Save').click();
+
+		cy.contains('Settings Wizard');
+	});
+
+	it('Reviewer accesses profile from the second journal without plugin interference', function () {
+		cy.login('agallego', null, secondJournalPath);
+
+		cy.visit('index.php/' + secondJournalPath + '/en/user/profile');
+		cy.get('#profileTabs').should('be.visible');
+
+		cy.get('.pkpNotification').should('not.exist');
+
+		cy.get('a[name="roles"]').click();
+		cy.waitJQuery();
+
+		cy.get('#interests').should('be.visible');
+		cy.get('.interests .tagit-choice').should('have.length.at.least', 1);
+
+		cy.get('input[id^="reviewerGroup-"]').first().check();
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+	});
+
+	it('Reviewer can navigate to dashboard from the second journal', function () {
+		cy.login('agallego', null, secondJournalPath);
+		cy.url().should('include', '/dashboard');
+
+		cy.get('.pkpNotification').should('not.exist');
+	});
+});

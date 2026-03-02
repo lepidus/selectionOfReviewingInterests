@@ -3,10 +3,11 @@
 namespace APP\plugins\generic\selectionOfReviewingInterests;
 
 use APP\core\Application;
-use APP\plugins\generic\selectionOfReviewingInterests\classes\hookCallbacks\HookCallbacks;
-use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsActions;
-use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\SelectionOfReviewingInterestsManage;
-use APP\plugins\generic\selectionOfReviewingInterests\controllers\grid\SelectionOfReviewingInterestsGridHandler;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\HookCallbacks;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\Actions;
+use APP\plugins\generic\selectionOfReviewingInterests\classes\settings\Manage;
+use APP\plugins\generic\selectionOfReviewingInterests\controllers\grid\InterestOptionsGridHandler;
+use APP\template\TemplateManager;
 use PKP\plugins\GenericPlugin;
 use PKP\plugins\Hook;
 
@@ -23,7 +24,6 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             $hookCallbacks = new HookCallbacks($this);
             Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
-            Hook::add('TemplateResource::getFilename', $this->_overridePluginTemplates(...));
             Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
         }
@@ -36,8 +36,8 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         $component = &$params[0];
         $componentInstance = &$params[2];
 
-        if ($component === 'plugins.generic.selectionOfReviewingInterests.controllers.grid.SelectionOfReviewingInterestsGridHandler') {
-            $componentInstance = new SelectionOfReviewingInterestsGridHandler($this);
+        if ($component === 'plugins.generic.selectionOfReviewingInterests.controllers.grid.InterestOptionsGridHandler') {
+            $componentInstance = new InterestOptionsGridHandler($this);
             return true;
         }
 
@@ -56,13 +56,13 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 
     public function getActions($request, $actionArgs)
     {
-        $actions = new SelectionOfReviewingInterestsActions($this);
+        $actions = new Actions($this);
         return $actions->execute($request, $actionArgs, parent::getActions($request, $actionArgs));
     }
 
     public function manage($args, $request)
     {
-        $manage = new SelectionOfReviewingInterestsManage($this);
+        $manage = new Manage($this);
         return $manage->execute($args, $request);
     }
 
@@ -76,5 +76,12 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
     {
         $request = Application::get()->getRequest();
         return $request->getContext() !== null;
+    }
+
+    public function setEnabled($enabled)
+    {
+        parent::setEnabled($enabled);
+        $templateMgr = TemplateManager::getManager(Application::get()->getRequest());
+        $templateMgr->clearCompiledTemplate();
     }
 }
