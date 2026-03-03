@@ -1,6 +1,6 @@
 <?php
 
-class Actions
+class SelectionOfReviewingInterestsActions
 {
     public $plugin;
 

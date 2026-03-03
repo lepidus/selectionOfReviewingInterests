@@ -1,8 +1,8 @@
 <?php
 
 import('lib.pkp.classes.plugins.GenericPlugin');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.Manage');
-import('plugins.generic.selectionOfReviewingInterests.classes.settings.Actions');
+import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsManage');
+import('plugins.generic.selectionOfReviewingInterests.classes.settings.SelectionOfReviewingInterestsActions');
 import('plugins.generic.selectionOfReviewingInterests.classes.HookCallbacks');
 
 class SelectionOfReviewingInterestsPlugin extends GenericPlugin
@@ -36,13 +36,13 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 
     public function getActions($request, $actionArgs)
     {
-        $actions = new Actions($this);
+        $actions = new SelectionOfReviewingInterestsActions($this);
         return $actions->execute($request, $actionArgs, parent::getActions($request, $actionArgs));
     }
 
     public function manage($args, $request)
     {
-        $manage = new Manage($this);
+        $manage = new SelectionOfReviewingInterestsManage($this);
         return $manage->execute($args, $request);
     }
 

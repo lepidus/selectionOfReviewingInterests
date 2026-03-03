@@ -2,7 +2,7 @@
 
 import('lib.pkp.classes.form.Form');
 
-class SettingsForm extends Form
+class SelectionOfReviewingInterestsSettingsForm extends Form
 {
     private $plugin;
     private $contextId;
