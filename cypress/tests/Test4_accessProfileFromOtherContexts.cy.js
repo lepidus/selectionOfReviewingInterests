@@ -43,4 +43,45 @@ describe('Accessing profile from other contexts works normally', function () {
 
 		cy.get('.pkpNotification').should('not.exist');
 	});
+
+	it('Reviewer adds a free-text interest from the second journal', function () {
+		cy.login('agallego', null, secondJournalPath);
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+
+		cy.get('.interests .tagit-new input').type('Custom Research Topic', {delay: 0});
+		cy.get('.interests .tagit-new input').type('{enter}');
+		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('exist');
+
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+	});
+
+	it('Free-text interests from other journals are displayed in journal with plugin', function () {
+		cy.login('agallego', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+
+		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
+		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+	});
+
+	it('Free-text interests are preserved after saving form in journal with plugin', function () {
+		cy.login('agallego', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+
+		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
+		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+	});
 });
