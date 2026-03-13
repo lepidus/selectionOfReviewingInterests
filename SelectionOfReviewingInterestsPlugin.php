@@ -26,6 +26,10 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
             Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
             Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
+            
+            // Hooks for reviewer selection interest filter
+            Hook::add('API::users::reviewers::params', $hookCallbacks->addInterestFilterToReviewersAPI(...));
+            Hook::add('User::Collector', $hookCallbacks->applyInterestFilterToUserCollector(...));
         }
 
         return $success;

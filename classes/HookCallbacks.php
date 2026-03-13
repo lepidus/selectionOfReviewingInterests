@@ -6,16 +6,20 @@ use APP\core\Application;
 use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin;
 use APP\template\TemplateManager;
 use PKP\security\Role;
+use PKP\db\DAORegistry;
 
 class HookCallbacks
 {
     private SelectionOfReviewingInterestsPlugin $plugin;
     private ?\Closure $messageFilterCallback = null;
     private ?\Closure $registrationFilterCallback = null;
+    private ?InterestFilterHelper $interestFilterHelper = null;
+    private ?array $currentInterestEntryIds = null;
 
     public function __construct(SelectionOfReviewingInterestsPlugin $plugin)
     {
         $this->plugin = $plugin;
+        $this->interestFilterHelper = new InterestFilterHelper($plugin);
     }
 
     public function addChangesOnTemplateDisplaying(string $hookName, array $params): bool
@@ -37,6 +41,9 @@ class HookCallbacks
             }
         } elseif ($template === 'frontend/pages/userRegister.tpl') {
             $this->addRegistrationFilter($templateMgr);
+        } elseif ($template === 'controllers/grid/users/reviewer/form/advancedSearchReviewerForm.tpl') {
+            // Inject interests filter into reviewer selection modal
+            $this->addInterestFilterToReviewerSelection($templateMgr, $context->getId());
         } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
             $request->redirect(null, 'user', 'profile');
         }
@@ -153,5 +160,130 @@ class HookCallbacks
     {
         $this->registrationFilterCallback = $this->registrationInterestsFilter(...);
         $templateMgr->registerFilter('output', $this->registrationFilterCallback);
+    }
+
+    /**
+     * Hook: API::users::reviewers::params
+     * Extend API parameters to accept and validate interestEntryIds parameter
+     * 
+     * @param string $hookName Hook name
+     * @param array $params [0] = &$params (allowed parameters), [1] = $request
+     * @return bool False to allow other hooks to continue
+     */
+    public function addInterestFilterToReviewersAPI(string $hookName, array $params): bool
+    {
+        $paramsArray = &$params[0];
+        $request = $params[1];
+
+        // Get the interestEntryIds parameter from query
+        $interestIds = $request->query('interestEntryIds');
+
+        if ($interestIds) {
+            // Parse and validate the IDs
+            $validatedIds = $this->interestFilterHelper->parseInterestIdsFromRequest($interestIds);
+
+            if (!empty($validatedIds)) {
+                // Store for later use in the Collector hook
+                $this->currentInterestEntryIds = $validatedIds;
+                
+                // Add to allowed parameters so it doesn't get filtered out
+                $paramsArray['interestEntryIds'] = $validatedIds;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Hook: User::Collector
+     * Apply interest filtering to the user collector query
+     * Called when the Collector is building its query
+     * 
+     * @param string $hookName Hook name
+     * @param array $params [0] = &$queryBuilder, [1] = $userCollector
+     * @return bool False to allow other hooks to continue
+     */
+    public function applyInterestFilterToUserCollector(string $hookName, array $params): bool
+    {
+        $queryBuilder = &$params[0];
+        
+        // Use the stored interest entry IDs from the API hook
+        if (empty($this->currentInterestEntryIds)) {
+            return false;
+        }
+
+        $interestEntryIds = $this->currentInterestEntryIds;
+
+        // Apply the filter using subquery to user_interests table
+        // This filters users who have ANY of the selected interests (OR logic)
+        $queryBuilder->whereExists(
+            function ($query) use ($interestEntryIds) {
+                $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('user_interests', 'ui')
+                    ->whereColumn('ui.user_id', '=', 'u.user_id')
+                    ->whereIn('ui.controlled_vocab_entry_id', $interestEntryIds);
+            }
+        );
+
+        // Clear after use to avoid applying to subsequent requests
+        $this->currentInterestEntryIds = null;
+
+        return false;
+    }
+
+    /**
+     * Add interest filter to the reviewer selection form/modal
+     * Injects JavaScript to enhance the SelectReviewerListPanel with interests filter
+     * 
+     * @param TemplateManager $templateMgr Template manager instance
+     * @param int $contextId Journal/Press context ID
+     */
+    private function addInterestFilterToReviewerSelection(TemplateManager $templateMgr, int $contextId): void
+    {
+        $interests = $this->interestFilterHelper->getConfiguredInterests($contextId);
+
+        if (empty($interests)) {
+            return;
+        }
+
+        // Get mapping of interest names to controlled vocab IDs
+        $entryIds = $this->interestFilterHelper->getInterestControlledVocabIds($contextId);
+
+        // Build the interests array for JavaScript
+        $interestOptions = [];
+        foreach ($interests as $id => $name) {
+            // Use the controlled vocab entry ID if available, otherwise use plugin ID
+            $key = $entryIds[$id] ?? $id;
+            $interestOptions[$key] = $name;
+        }
+
+        // Inject interests data as JavaScript variable
+        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.reviewingInterestOptions = ';
+        $inlineScript .= json_encode($interestOptions) . ';';
+
+        $templateMgr->addJavaScript(
+            'reviewingInterestOptions',
+            $inlineScript,
+            [
+                'inline' => true,
+                'contexts' => 'backend',
+            ]
+        );
+
+        // Inject the JavaScript that handles the filter
+        $request = Application::get()->getRequest();
+        $scriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/reviewerSelectionInterestFilter.js';
+
+        $templateMgr->addJavaScript(
+            'reviewerSelectionInterestFilter',
+            $scriptUrl,
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
     }
 }

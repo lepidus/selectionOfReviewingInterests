@@ -27,3 +27,12 @@ msgstr "Enter the text that will appear as a selectable reviewing interest optio
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "Option text is required."
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.filterLabel"
+msgstr "Reviewing Interests"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.noInterestsConfigured"
+msgstr "No reviewing interests configured"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.selectInterests"
+msgstr "Select one or more reviewing interests to filter reviewers"

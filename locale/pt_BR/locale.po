@@ -27,3 +27,12 @@ msgstr "Insira o texto que aparecerá como uma opção de interesse de avaliaç�
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "O texto da opção é obrigatório."
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.filterLabel"
+msgstr "Áreas de Interesse"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.noInterestsConfigured"
+msgstr "Nenhuma área de interesse configurada"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.selectInterests"
+msgstr "Selecione uma ou mais áreas de interesse para filtrar avaliadores"

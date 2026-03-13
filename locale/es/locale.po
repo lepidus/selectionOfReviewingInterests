@@ -27,3 +27,12 @@ msgstr "Ingrese el texto que aparecerá como una opción de interés de revisió
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "El texto de la opción es obligatorio."
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.filterLabel"
+msgstr "Intereses de Revisión"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.noInterestsConfigured"
+msgstr "No hay intereses de revisión configurados"
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewerSelection.selectInterests"
+msgstr "Seleccione uno o más intereses de revisión para filtrar revisores"
