@@ -139,12 +139,9 @@ class HookCallbacks
         $interestFilter = [
             'param' => 'interestOption',
             'title' => __('plugins.generic.selectionOfReviewingInterests.reviewer.filter.label'),
-            'filterType' => 'filter-select',
-            'value' => '',
-            'options' => array_merge(
-                [['value' => '', 'label' => __('plugins.generic.selectionOfReviewingInterests.reviewer.filter.all')]],
-                array_map(fn ($opt) => ['value' => $opt, 'label' => $opt], $optionsArray)
-            ),
+            'filterType' => 'filter-checkboxes',
+            'value' => [],
+            'options' => array_map(fn ($opt) => ['value' => $opt, 'label' => $opt], $optionsArray),
         ];
 
         $selectReviewerListData = $templateMgr->getTemplateVars('selectReviewerListData');
@@ -165,7 +162,7 @@ class HookCallbacks
 
         $interestOption = $request->query('interestOption');
         if ($interestOption !== null) {
-            $requestParams['interestOption'] = $interestOption;
+            $requestParams['interestOption'] = (array) $interestOption;
         }
 
         return false;
@@ -179,7 +176,12 @@ class HookCallbacks
         $request = Application::get()->getRequest();
         $interestOption = $request->getQueryArray()['interestOption'] ?? null;
 
-        if ($interestOption === null || $interestOption === '') {
+        if ($interestOption === null || $interestOption === '' || $interestOption === []) {
+            return false;
+        }
+
+        $interests = array_filter((array) $interestOption);
+        if (empty($interests)) {
             return false;
         }
 
@@ -187,7 +189,7 @@ class HookCallbacks
             fn (Builder $q) => $q->from('user_interests', 'ui_filter')
                 ->join('controlled_vocab_entry_settings AS cves_filter', 'ui_filter.controlled_vocab_entry_id', '=', 'cves_filter.controlled_vocab_entry_id')
                 ->whereColumn('ui_filter.user_id', '=', 'u.user_id')
-                ->whereRaw('LOWER(cves_filter.setting_value) = LOWER(?)', [$interestOption])
+                ->whereIn('cves_filter.setting_value', $interests)
         );
 
         return false;

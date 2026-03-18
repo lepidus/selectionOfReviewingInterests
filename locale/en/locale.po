@@ -31,5 +31,3 @@ msgstr "Option text is required."
 msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.label"
 msgstr "Filter by interest area"
 
-msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.all"
-msgstr "All areas"
