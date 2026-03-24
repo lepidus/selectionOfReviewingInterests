@@ -27,3 +27,7 @@ msgstr "Enter the text that will appear as a selectable reviewing interest optio
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "Option text is required."
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.label"
+msgstr "Filter by interest area"
+

@@ -5,6 +5,7 @@ namespace APP\plugins\generic\selectionOfReviewingInterests\classes;
 use APP\core\Application;
 use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin;
 use APP\template\TemplateManager;
+use Illuminate\Database\Query\Builder;
 use PKP\security\Role;
 
 class HookCallbacks
@@ -37,8 +38,11 @@ class HookCallbacks
             }
         } elseif ($template === 'frontend/pages/userRegister.tpl') {
             $this->addRegistrationFilter($templateMgr);
-        } elseif (!empty($templateMgr->getState('menu')) && $this->userShouldBeRedirected($request)) {
-            $request->redirect(null, 'user', 'profile');
+        } elseif (!empty($templateMgr->getState('menu'))) {
+            if ($this->userShouldBeRedirected($request)) {
+                $request->redirect(null, 'user', 'profile');
+            }
+            $this->registerFilterSelectComponent($templateMgr, $context->getId());
         }
 
         return false;
@@ -108,6 +112,102 @@ class HookCallbacks
         }
 
         return $output;
+    }
+
+    public function addInterestFilterToReviewerPanel(string $hookName, array $params): bool
+    {
+        $templateMgr = $params[0];
+        $template = $params[1];
+
+        if ($template !== 'controllers/grid/users/reviewer/form/advancedSearchReviewerForm.tpl') {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $options = $this->plugin->getSetting($context->getId(), 'interestOptions') ?: [];
+        $optionsArray = array_values($options);
+
+        if (empty($optionsArray)) {
+            return false;
+        }
+
+        $interestFilter = [
+            'param' => 'interestOption',
+            'title' => __('plugins.generic.selectionOfReviewingInterests.reviewer.filter.label'),
+            'filterType' => 'filter-checkboxes',
+            'value' => [],
+            'options' => array_map(fn ($opt) => ['value' => $opt, 'label' => $opt], $optionsArray),
+        ];
+
+        $selectReviewerListData = $templateMgr->getTemplateVars('selectReviewerListData');
+
+        if ($selectReviewerListData
+            && isset($selectReviewerListData['components']['selectReviewer']['filters'])) {
+            $selectReviewerListData['components']['selectReviewer']['filters'][] = $interestFilter;
+            $templateMgr->assign('selectReviewerListData', $selectReviewerListData);
+        }
+
+        return false;
+    }
+
+    public function addInterestFilterParam(string $hookName, array $params): bool
+    {
+        $requestParams = &$params[0];
+        $request = $params[1];
+
+        $interestOption = $request->query('interestOption');
+        if ($interestOption !== null) {
+            $requestParams['interestOption'] = (array) $interestOption;
+        }
+
+        return false;
+    }
+
+    public function filterReviewersByInterest(string $hookName, array $params): bool
+    {
+        $query = $params[0];
+        $collector = $params[1];
+
+        $request = Application::get()->getRequest();
+        $interestOption = $request->getQueryArray()['interestOption'] ?? null;
+
+        if ($interestOption === null || $interestOption === '' || $interestOption === []) {
+            return false;
+        }
+
+        $interests = array_filter((array) $interestOption);
+        if (empty($interests)) {
+            return false;
+        }
+
+        $query->whereExists(
+            fn (Builder $q) => $q->from('user_interests', 'ui_filter')
+                ->join('controlled_vocab_entry_settings AS cves_filter', 'ui_filter.controlled_vocab_entry_id', '=', 'cves_filter.controlled_vocab_entry_id')
+                ->whereColumn('ui_filter.user_id', '=', 'u.user_id')
+                ->whereIn('cves_filter.setting_value', $interests)
+        );
+
+        return false;
+    }
+
+    private function registerFilterSelectComponent(TemplateManager $templateMgr, int $contextId): void
+    {
+        $request = Application::get()->getRequest();
+        $scriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/FilterSelect.js';
+
+        $templateMgr->addJavaScript(
+            'soriFilterSelect',
+            $scriptUrl,
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
     }
 
     private function addInterestsScripts(TemplateManager $templateMgr, int $contextId): void
