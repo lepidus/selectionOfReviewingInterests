@@ -1,5 +1,5 @@
 msgid "plugins.generic.selectionOfReviewingInterests.displayName"
-msgstr "Selection Field in Reviewing Interests Area"
+msgstr "Selection of Review Interests"
 
 msgid "plugins.generic.selectionOfReviewingInterests.description"
 msgstr "Adds a selection field in the Reviewing Interests Area, with options defined from the plugin settings."
