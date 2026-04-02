@@ -17,7 +17,7 @@ describe('Enable Selection Of Reviewing Interests plugin', function () {
 
         cy.get('tr#' + pluginRowId + ' a.show_extras').click();
         cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
-        cy.get('[data-cy="sidemodal-header"]').contains('Selection Field in Reviewing Interests Area');
+        cy.get('[data-cy="sidemodal-header"]').contains('Selection of Review Interests');
         cy.waitJQuery();
         cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]').contains('Add option').click();
         cy.get('input[id^=optionName-]').should('be.visible');
