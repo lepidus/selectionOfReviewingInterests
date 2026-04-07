@@ -76,5 +76,5 @@
 		},
 	};
 
-	pkp.registry.registerComponent('filter-checkboxes', FilterCheckboxes);
+	pkp.Vue.component('filter-checkboxes', FilterCheckboxes);
 })();
