@@ -160,7 +160,7 @@ class HookCallbacks
         $requestParams = &$params[0];
         $request = $params[1];
 
-        $interestOption = $request->query('interestOption');
+        $interestOption = $request->getQueryParam('interestOption');
         if ($interestOption !== null) {
             $requestParams['interestOption'] = (array) $interestOption;
         }
