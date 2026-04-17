@@ -39,14 +39,14 @@
 		},
 		template:
 			'<div class="pkpFilter pkpFilter--checkboxes">' +
-			'<div class="pkpFilter__inputTitle" style="padding: 0.5rem 1rem; font-weight: bold; font-size: 13px;">' +
+			'<div class="pkpFilter__inputTitle" style="padding: 0.5rem 1rem; font-weight: bold; font-size: 14px; color: #000000D6;">' +
 			'{{ title }}' +
 			'</div>' +
 			'<div style="padding: 0 0.5rem 0.5rem 1rem;">' +
 			'<label ' +
 			'v-for="opt in options" ' +
 			':key="opt.value" ' +
-			'style="display: flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0; font-size: 13px; cursor: pointer;"' +
+			'style="display: flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0; font-size: 14px; font-weight: normal; color: #006798; cursor: pointer;"' +
 			'>' +
 			'<input ' +
 			'type="checkbox" ' +
