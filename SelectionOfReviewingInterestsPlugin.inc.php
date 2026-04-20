@@ -13,8 +13,12 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         if ($success && $this->getEnabled()) {
             $hookCallbacks = new HookCallbacks($this);
             HookRegistry::register('TemplateManager::display', [$hookCallbacks, 'addChangesOnTemplateDisplaying']);
+            HookRegistry::register('advancedsearchreviewerform::display', [$hookCallbacks, 'addReviewerInterestFilterOnFormDisplay']);
             HookRegistry::register('Request::redirect', [$hookCallbacks, 'redirectUserAfterLogin']);
             HookRegistry::register('LoadComponentHandler', [$hookCallbacks, 'setupOptionsConfigurationGridHandler']);
+            HookRegistry::register('API::users::reviewers::params', [$hookCallbacks, 'addReviewerInterestFilterParam']);
+            HookRegistry::register('User::getReviewers::queryBuilder', [$hookCallbacks, 'setReviewerInterestFilter']);
+            HookRegistry::register('User::getMany::queryObject', [$hookCallbacks, 'applyReviewerInterestFilter']);
         }
         return $success;
     }
