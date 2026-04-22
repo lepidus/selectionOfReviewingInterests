@@ -2,6 +2,8 @@
 
 class HookCallbacks
 {
+    private const REVIEWER_INTEREST_FILTER_PARAM_PREFIX = 'interestOption__';
+
     private $plugin;
 
     public function __construct($plugin)
@@ -80,6 +82,23 @@ class HookCallbacks
         return $output;
     }
 
+    public function reviewerInterestFilterMarkupFilter($output, $templateMgr)
+    {
+        $pattern = '/<script type="text\/javascript">\s*pkp\.registry\.init\(\'select-reviewer-[^\']+\',\s*\'Container\',\s*\{.*?<\/script>/s';
+        if (preg_match($pattern, $output, $matches, PREG_OFFSET_CAPTURE)) {
+            $offset = $matches[0][1];
+
+            $newOutput = substr($output, 0, $offset);
+            $newOutput .= $this->getReviewerInterestFilterComponentScriptTag();
+            $newOutput .= substr($output, $offset);
+
+            $output = $newOutput;
+            $templateMgr->unregisterFilter('output', [$this, 'reviewerInterestFilterMarkupFilter']);
+        }
+
+        return $output;
+    }
+
     public function registrationInterestsFilter($output, $templateMgr)
     {
         $pattern = '/<div\s+id="reviewerInterests"[^>]*>.*?<\/div>/s';
@@ -101,10 +120,99 @@ class HookCallbacks
         return false;
     }
 
+    public function addReviewerInterestFilterOnFormDisplay(string $hookName, array $params)
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $this->addReviewerInterestFilter($templateMgr, $context->getId());
+
+        return false;
+    }
+
+    public function addReviewerInterestFilterParam(string $hookName, array $params)
+    {
+        $reviewerParams = &$params[0];
+        $slimRequest = $params[1];
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $availableOptions = $this->getInterestOptions($context->getId());
+        $selectedOptions = [];
+        foreach ($slimRequest->getQueryParams() as $param => $value) {
+            if (strpos($param, self::REVIEWER_INTEREST_FILTER_PARAM_PREFIX) !== 0) {
+                continue;
+            }
+
+            if (is_string($value)) {
+                $selectedOptions[] = $value;
+            }
+        }
+
+        $validatedOptions = $this->normalizeSelectedInterestOptions($selectedOptions, $availableOptions);
+        if (empty($validatedOptions)) {
+            return false;
+        }
+
+        $reviewerParams['interestOption'] = $validatedOptions;
+
+        return false;
+    }
+
+    public function setReviewerInterestFilter(string $hookName, array $params)
+    {
+        $reviewerQueryBuilder = $params[0];
+        $args = $params[1];
+
+        if (empty($args['interestOption']) || (!is_string($args['interestOption']) && !is_array($args['interestOption']))) {
+            return false;
+        }
+
+        $interestOptions = $this->normalizeSelectedInterestOptions($args['interestOption']);
+        if (empty($interestOptions)) {
+            return false;
+        }
+
+        $reviewerQueryBuilder->selectionOfReviewingInterestsInterestOptions = $interestOptions;
+
+        return false;
+    }
+
+    public function applyReviewerInterestFilter(string $hookName, array $params)
+    {
+        $query = $params[0];
+        $userQueryBuilder = $params[1];
+
+        if (empty($userQueryBuilder->selectionOfReviewingInterestsInterestOptions)) {
+            return false;
+        }
+
+        $interestOptions = $userQueryBuilder->selectionOfReviewingInterestsInterestOptions;
+        $normalizedInterestOptions = array_map('mb_strtolower', $interestOptions);
+        $placeholders = implode(', ', array_fill(0, count($normalizedInterestOptions), '?'));
+
+        $query->whereExists(function ($query) use ($normalizedInterestOptions, $placeholders) {
+            $query->from('user_interests', 'ui')
+                ->join('controlled_vocab_entry_settings AS cves', 'ui.controlled_vocab_entry_id', '=', 'cves.controlled_vocab_entry_id')
+                ->whereColumn('ui.user_id', '=', 'u.user_id')
+                ->where('cves.setting_name', '=', 'interest')
+                ->whereRaw('LOWER(cves.setting_value) IN (' . $placeholders . ')', $normalizedInterestOptions);
+        });
+
+        return false;
+    }
+
     private function addInterestsScripts($templateMgr, $contextId)
     {
-        $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
-        $optionsArray = array_values($options);
+        $optionsArray = $this->getInterestOptions($contextId);
 
         $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
         $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
@@ -148,5 +256,83 @@ class HookCallbacks
             'output',
             [$this, 'registrationInterestsFilter']
         );
+    }
+
+    private function addReviewerInterestFilter($templateMgr, $contextId)
+    {
+        $selectReviewerListData = $templateMgr->getTemplateVars('selectReviewerListData');
+        if (empty($selectReviewerListData['components']['selectReviewer'])) {
+            return;
+        }
+
+        $interestOptions = $this->getInterestOptions($contextId);
+        if (empty($interestOptions)) {
+            return;
+        }
+
+        $this->addReviewerInterestFilterMarkup($templateMgr);
+
+        $filters = $selectReviewerListData['components']['selectReviewer']['filters'] ?? [];
+        foreach ($interestOptions as $index => $interestOption) {
+            $filters[] = [
+                'param' => self::REVIEWER_INTEREST_FILTER_PARAM_PREFIX . $index,
+                'value' => $interestOption,
+                'title' => $interestOption,
+                'groupTitle' => 'Filter by interest area',
+                'showGroupTitle' => $index === 0,
+                'filterType' => 'reviewer-interest-filter',
+            ];
+        }
+
+        $selectReviewerListData['components']['selectReviewer']['filters'] = $filters;
+        $templateMgr->assign('selectReviewerListData', $selectReviewerListData);
+    }
+
+    private function addReviewerInterestFilterMarkup($templateMgr)
+    {
+        $templateMgr->registerFilter(
+            'output',
+            [$this, 'reviewerInterestFilterMarkupFilter']
+        );
+    }
+
+    private function getReviewerInterestFilterComponentScriptTag()
+    {
+        $request = Application::get()->getRequest();
+        $scriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/reviewerInterestFilter.js';
+
+        return '<script type="text/javascript" src="' . $scriptUrl . '"></script>';
+    }
+
+    private function getInterestOptions($contextId)
+    {
+        $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: array();
+        $options = array_map('trim', array_values($options));
+
+        return array_values(array_filter($options, function ($option) {
+            return $option !== '';
+        }));
+    }
+
+    private function normalizeSelectedInterestOptions($interestOptions, $availableOptions = null)
+    {
+        if (is_string($interestOptions)) {
+            $interestOptions = [$interestOptions];
+        } elseif (!is_array($interestOptions)) {
+            return [];
+        }
+
+        $interestOptions = array_map('trim', $interestOptions);
+        $interestOptions = array_values(array_unique(array_filter($interestOptions, function ($option) {
+            return is_string($option) && $option !== '';
+        })));
+
+        if ($availableOptions === null) {
+            return $interestOptions;
+        }
+
+        return array_values(array_filter($interestOptions, function ($option) use ($availableOptions) {
+            return in_array($option, $availableOptions, true);
+        }));
     }
 }
