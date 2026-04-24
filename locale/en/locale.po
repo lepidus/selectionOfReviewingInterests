@@ -7,6 +7,9 @@ msgstr "Adds a selection field in the Reviewing Interests Area, with options def
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "You must select at least one reviewing interest in the \"Roles\" tab before you can access the system."
 
+msgid "plugins.generic.selectionOfReviewingInterests.profilePage.placeholder"
+msgstr "Select one or more options"
+
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
 msgstr "Define the reviewing interest options available to reviewers. These options replace the free-text interests field in the user profile. Reviewers will only be able to select from the options listed below. Reviewers who have not selected at least one interest will be redirected to their profile page upon login."
 
@@ -30,4 +33,3 @@ msgstr "Option text is required."
 
 msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.label"
 msgstr "Filter by interest area"
-
