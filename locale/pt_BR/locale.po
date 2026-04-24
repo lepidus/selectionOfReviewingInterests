@@ -7,6 +7,9 @@ msgstr "Adiciona um campo de seleção na Áreas de Interesse de Avaliação, co
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "É necessário selecionar pelo menos uma área de interesse para avaliação na aba \"Papéis\" antes de acessar o sistema."
 
+msgid "plugins.generic.selectionOfReviewingInterests.profilePage.placeholder"
+msgstr "Selecione uma ou mais opções"
+
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
 msgstr "Defina as opções de interesse de avaliação disponíveis para os avaliadores. Essas opções substituem o campo de texto livre de interesses no perfil do usuário. Os avaliadores só poderão selecionar entre as opções listadas abaixo. Avaliadores que não tiverem selecionado pelo menos um interesse serão redirecionados para a página de perfil ao fazer login."
 
