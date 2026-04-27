@@ -81,14 +81,14 @@
 						}
 					},
 					afterTagAdded: function(event, ui) {
-						$(el).find('.tagit-new input[type="text"]').autocomplete('close');
+						$(el).find('.tagit-new input[type="text"]').autocomplete();
 						updateInterestsUi(el, placeholder);
 						if (typeof originalAfterTagAdded === 'function') {
 							originalAfterTagAdded.call(this, event, ui);
 						}
 					},
 					afterTagRemoved: function(event, ui) {
-						$(el).find('.tagit-new input[type="text"]').autocomplete('close');
+						$(el).find('.tagit-new input[type="text"]').autocomplete();
 						updateInterestsUi(el, placeholder);
 						if (typeof originalAfterTagRemoved === 'function') {
 							originalAfterTagRemoved.call(this, event, ui);
