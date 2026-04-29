@@ -1,7 +1,35 @@
 (function($) {
 	var originalTagit = $.fn.tagit;
+
+	var updateAutocompleteWidth = function(el) {
+		var $field = $(el);
+		var $widget = $field
+			.find('.tagit-new input[type="text"]')
+			.autocomplete('widget');
+		var fieldOffset = $field.offset();
+
+		$widget
+			.addClass('sori-interests-autocomplete')
+			.css({
+				'width': $field.outerWidth() + 'px',
+				'max-width': 'none',
+				'box-sizing': 'border-box',
+				'left': fieldOffset.left + 'px'
+			});
+	};
+
+	var updateInterestsUi = function(el, placeholder) {
+		var $field = $(el);
+		var assignedTags = originalTagit.call(el, 'assignedTags') || [];
+		var isEmpty = assignedTags.length === 0;
+		var $input = $field.find('.tagit-new input[type="text"]');
+
+		$field.addClass('sori-interests-selectLike');
+		$field.toggleClass('sori-interests-empty', isEmpty);
+		$input.attr('placeholder', isEmpty ? placeholder : '');
+	};
+
 	$.fn.tagit = function(method) {
-		var result = originalTagit.apply(this, arguments);
 		if (typeof method !== 'string'
 				&& $(this).hasClass('interests')
 				&& !$(this).data('soriReinit')) {
@@ -9,47 +37,82 @@
 				&& $.pkp.plugins.generic
 				&& $.pkp.plugins.generic.selectionOfReviewingInterests;
 			if (ns && ns.interestsOptions) {
-				var existingTags = originalTagit.call(this, 'assignedTags') || [];
-				var existingTagsLower = $.map(existingTags, function(tag) {
-					return tag.toLowerCase();
-				});
-
-				originalTagit.call(this, 'destroy');
 				var el = this;
-				originalTagit.call(this, {
+				var placeholder = ns.placeholder || 'Selecione uma ou mais opcoes';
+				var baseOptions = method || {};
+				var preExistingTagsLower = $.map($(this).children('li:not(.tagit-new)'), function(tag) {
+					return $.trim($(tag).text()).toLowerCase();
+				});
+				var originalBeforeTagAdded = baseOptions.beforeTagAdded;
+				var originalAfterTagAdded = baseOptions.afterTagAdded;
+				var originalAfterTagRemoved = baseOptions.afterTagRemoved;
+				var configuredOptions = $.extend(true, {}, baseOptions, {
 					fieldName: 'interests[]',
-					availableTags: ns.interestsOptions,
 					allowSpaces: true,
-					autocomplete: {delay: 0, minLength: 0},
+					showAutocompleteOnFocus: true,
+					autocomplete: $.extend({}, baseOptions.autocomplete || {}, {
+						delay: 0,
+						minLength: 0,
+						source: function(search, showChoices) {
+							var filter = search.term.toLowerCase();
+							var choices = $.grep(ns.interestsOptions, function(option) {
+								return option.toLowerCase().indexOf(filter) === 0;
+							});
+							if (!this.options.allowDuplicates) {
+								choices = this._subtractArray(choices, this.assignedTags());
+							}
+							showChoices(choices);
+						}
+					}),
 					beforeTagAdded: function(event, ui) {
-						var availableTags = originalTagit.call(el, 'option', 'availableTags');
 						var tagLower = ui.tagLabel.toLowerCase();
-						var inAllowedList = $.map(availableTags, function(tag) {
+						var normalizedAllowedList = $.map(ns.interestsOptions, function(tag) {
 							return tag.toLowerCase();
-						}).indexOf(tagLower) !== -1;
-						var isPreExisting = existingTagsLower.indexOf(tagLower) !== -1;
-						return inAllowedList || isPreExisting;
+						});
+						var inAllowedList = normalizedAllowedList.indexOf(tagLower) !== -1;
+						var isPreExisting = preExistingTagsLower.indexOf(tagLower) !== -1;
+
+						if (!inAllowedList && !isPreExisting) {
+							return false;
+						}
+
+						if (typeof originalBeforeTagAdded === 'function') {
+							return originalBeforeTagAdded.call(this, event, ui);
+						}
+					},
+					afterTagAdded: function(event, ui) {
+						$(el).find('.tagit-new input[type="text"]').autocomplete();
+						updateInterestsUi(el, placeholder);
+						if (typeof originalAfterTagAdded === 'function') {
+							originalAfterTagAdded.call(this, event, ui);
+						}
+					},
+					afterTagRemoved: function(event, ui) {
+						$(el).find('.tagit-new input[type="text"]').autocomplete();
+						updateInterestsUi(el, placeholder);
+						if (typeof originalAfterTagRemoved === 'function') {
+							originalAfterTagRemoved.call(this, event, ui);
+						}
 					}
 				});
+				var result = originalTagit.call(this, configuredOptions);
+				var $input = $(this).find('.tagit-new input[type="text"]');
 
-				$.each(existingTags, function(i, tag) {
-					var currentTags = originalTagit.call(el, 'assignedTags') || [];
-					var currentTagsLower = $.map(currentTags, function(t) {
-						return t.toLowerCase();
-					});
-					if (currentTagsLower.indexOf(tag.toLowerCase()) === -1) {
-						originalTagit.call(el, 'createTag', tag);
-					}
-				});
-
-				$(this).data('soriReinit', true);
-				$(document)
-					.off('focus.sori click.sori', '.tagit-new input')
-					.on('focus.sori click.sori', '.tagit-new input', function() {
+				updateInterestsUi(el, placeholder);
+				$input
+					.off('autocompleteopen.sori click.sori')
+					.on('autocompleteopen.sori', function() {
+						updateAutocompleteWidth(el);
+					})
+					.on('click.sori', function() {
 						$(this).autocomplete('search', '');
 					});
+				$(this).data('soriReinit', true);
+
+				return result;
 			}
 		}
-		return result;
+
+		return originalTagit.apply(this, arguments);
 	};
 })(jQuery);

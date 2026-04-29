@@ -214,12 +214,15 @@ class HookCallbacks
     {
         $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: [];
         $optionsArray = array_values($options);
+        $placeholderText = __('plugins.generic.selectionOfReviewingInterests.profilePage.placeholder');
 
         $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
         $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
         $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
         $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
         $inlineScript .= json_encode($optionsArray) . ';';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.placeholder = ';
+        $inlineScript .= json_encode($placeholderText) . ';';
 
         $templateMgr->addJavaScript(
             'interestsOptions',
@@ -232,10 +235,20 @@ class HookCallbacks
 
         $request = Application::get()->getRequest();
         $patchScriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
+        $patchStyleUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/interestsTagitPatch.css';
 
         $templateMgr->addJavaScript(
             'interestsTagitPatch',
             $patchScriptUrl,
+            [
+                'contexts' => 'backend',
+                'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
+            ]
+        );
+
+        $templateMgr->addStyleSheet(
+            'interestsTagitPatch',
+            $patchStyleUrl,
             [
                 'contexts' => 'backend',
                 'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
