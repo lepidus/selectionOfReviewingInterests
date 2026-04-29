@@ -44,6 +44,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.url().should('include', '/dashboard');
 
 		cy.get('.pkpNotification').should('not.exist');
+		cy.logout();
 	});
 
 	it('Reviewer adds a free-text interest from the second journal', function () {
