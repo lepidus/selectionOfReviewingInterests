@@ -23,7 +23,7 @@ describe('Configure reviewing interests options', function () {
                 .contains('Add option')
                 .click();
 
-            cy.waitJQuery();
+            cy.wait(1000);
 
             cy.get('input[id^=optionName-]')
                 .clear()
