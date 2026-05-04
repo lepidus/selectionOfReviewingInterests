@@ -91,7 +91,7 @@
 								{
 									style: {
 										display: 'flex',
-										alignItems: 'flex-start',
+										alignItems: 'center',
 										padding: '0.35rem 1rem',
 										cursor: 'pointer',
 										color: '#006798',
@@ -110,8 +110,7 @@
 											checked: this.isFilterActive
 										},
 										style: {
-											flexShrink: '0',
-											marginTop: '0.15rem'
+											flexShrink: '0'
 										},
 										on: {
 											change: function() {
