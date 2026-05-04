@@ -89,6 +89,7 @@ class HookCallbacks
             $offset = $matches[0][1];
 
             $newOutput = substr($output, 0, $offset);
+            $newOutput .= $this->getReviewerInterestFilterStyleTag();
             $newOutput .= $this->getReviewerInterestFilterComponentScriptTag();
             $newOutput .= substr($output, $offset);
 
@@ -315,6 +316,21 @@ class HookCallbacks
         $scriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/reviewerInterestFilter.js';
 
         return '<script type="text/javascript" src="' . $scriptUrl . '"></script>';
+    }
+
+    private function getReviewerInterestFilterStyleTag()
+    {
+        return '<style type="text/css">'
+            . '.listPanel--selectReviewer .listPanel__sidebar{'
+            . 'flex:0 0 192px !important;'
+            . 'width:192px !important;'
+            . 'min-width:192px !important;'
+            . 'max-width:192px !important;'
+            . 'box-sizing:border-box;'
+            . '}'
+            . '.listPanel--selectReviewer .listPanel__sidebar-enter{margin-inline-end:-192px !important;}'
+            . '.listPanel--selectReviewer .listPanel__sidebar-leave-to{margin-inline-end:-192px !important;}'
+            . '</style>';
     }
 
     private function getInterestOptions($contextId)
