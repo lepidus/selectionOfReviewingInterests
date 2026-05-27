@@ -135,6 +135,41 @@ class HookCallbacks
         return false;
     }
 
+    public function addInterestsScriptsOnUserDetailsFormDisplay(string $hookName, array $params)
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $templateMgr = TemplateManager::getManager($request);
+        $templateMgr->registerFilter(
+            'output',
+            [$this, 'userDetailsInterestsAssetsFilter']
+        );
+
+        return false;
+    }
+
+    public function userDetailsInterestsAssetsFilter($output, $templateMgr)
+    {
+        if (strpos($output, 'id="userDetailsForm"') === false
+                || strpos($output, 'class="interests"') === false) {
+            return $output;
+        }
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return $output;
+        }
+
+        $templateMgr->unregisterFilter('output', [$this, 'userDetailsInterestsAssetsFilter']);
+
+        return $output . $this->getInterestsAssetsMarkup($context->getId());
+    }
+
     public function addReviewerInterestFilterParam(string $hookName, array $params)
     {
         $reviewerParams = &$params[0];
@@ -213,20 +248,9 @@ class HookCallbacks
 
     private function addInterestsScripts($templateMgr, $contextId)
     {
-        $optionsArray = $this->getInterestOptions($contextId);
-        $placeholderText = __('plugins.generic.selectionOfReviewingInterests.profilePage.placeholder');
-
-        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
-        $inlineScript .= json_encode($optionsArray) . ';';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.placeholder = ';
-        $inlineScript .= json_encode($placeholderText) . ';';
-
         $templateMgr->addJavaScript(
             'interestsOptions',
-            $inlineScript,
+            $this->getInterestsOptionsInlineScript($contextId),
             [
                 'inline' => true,
                 'contexts' => 'backend',
@@ -254,6 +278,35 @@ class HookCallbacks
                 'priority' => STYLE_SEQUENCE_LATE,
             ]
         );
+    }
+
+    private function getInterestsOptionsInlineScript($contextId)
+    {
+        $optionsArray = $this->getInterestOptions($contextId);
+        $placeholderText = __('plugins.generic.selectionOfReviewingInterests.profilePage.placeholder');
+
+        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
+        $inlineScript .= json_encode($optionsArray) . ';';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.placeholder = ';
+        $inlineScript .= json_encode($placeholderText) . ';';
+
+        return $inlineScript;
+    }
+
+    private function getInterestsAssetsMarkup($contextId)
+    {
+        $request = Application::get()->getRequest();
+        $patchScriptUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
+        $patchStyleUrl = $request->getBaseUrl() . '/' . $this->plugin->getPluginPath() . '/styles/interestsTagitPatch.css';
+
+        return '<script type="text/javascript">'
+            . $this->getInterestsOptionsInlineScript($contextId)
+            . '</script>'
+            . '<link rel="stylesheet" type="text/css" href="' . htmlspecialchars($patchStyleUrl, ENT_QUOTES, 'UTF-8') . '" />'
+            . '<script type="text/javascript" src="' . htmlspecialchars($patchScriptUrl, ENT_QUOTES, 'UTF-8') . '"></script>';
     }
 
     private function addRedirectMessageFilter($templateMgr)
