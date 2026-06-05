@@ -114,6 +114,27 @@ class HookCallbacks
         return $output;
     }
 
+    public function addInterestsPatchToUserDetailsForm(string $hookName, array $params): bool
+    {
+        $smarty = $params[1];
+        $output = &$params[2];
+
+        if ($smarty->getTemplateVars('disableInterestsSection')) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+
+        if (!$context) {
+            return false;
+        }
+
+        $output = $this->getInterestsPatchInlineMarkup($context->getId());
+
+        return false;
+    }
+
     public function addInterestFilterToReviewerPanel(string $hookName, array $params): bool
     {
         $templateMgr = $params[0];
@@ -212,21 +233,9 @@ class HookCallbacks
 
     private function addInterestsScripts(TemplateManager $templateMgr, int $contextId): void
     {
-        $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: [];
-        $optionsArray = array_values($options);
-        $placeholderText = __('plugins.generic.selectionOfReviewingInterests.profilePage.placeholder');
-
-        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
-        $inlineScript .= json_encode($optionsArray) . ';';
-        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.placeholder = ';
-        $inlineScript .= json_encode($placeholderText) . ';';
-
         $templateMgr->addJavaScript(
             'interestsOptions',
-            $inlineScript,
+            $this->getInterestsOptionsScript($contextId),
             [
                 'inline' => true,
                 'contexts' => 'backend',
@@ -254,6 +263,43 @@ class HookCallbacks
                 'priority' => TemplateManager::STYLE_SEQUENCE_LATE,
             ]
         );
+    }
+
+    private function getInterestsOptionsScript(int $contextId): string
+    {
+        $options = $this->plugin->getSetting($contextId, 'interestOptions') ?: [];
+        $optionsArray = array_values($options);
+        $placeholderText = __('plugins.generic.selectionOfReviewingInterests.profilePage.placeholder');
+
+        $inlineScript = '$.pkp.plugins.generic = $.pkp.plugins.generic || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests = ';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests || {};';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.interestsOptions = ';
+        $inlineScript .= json_encode($optionsArray) . ';';
+        $inlineScript .= '$.pkp.plugins.generic.selectionOfReviewingInterests.placeholder = ';
+        $inlineScript .= json_encode($placeholderText) . ';';
+
+        return $inlineScript;
+    }
+
+    private function getInterestsPatchInlineMarkup(int $contextId): string
+    {
+        $patchScriptPath = BASE_SYS_DIR . '/' . $this->plugin->getPluginPath() . '/js/interestsTagitPatch.js';
+        $patchStylePath = BASE_SYS_DIR . '/' . $this->plugin->getPluginPath() . '/styles/interestsTagitPatch.css';
+        $patchScript = is_readable($patchScriptPath) ? file_get_contents($patchScriptPath) : '';
+        $patchStyle = is_readable($patchStylePath) ? file_get_contents($patchStylePath) : '';
+
+        $markup = '<script type="text/javascript">' . $this->getInterestsOptionsScript($contextId) . '</script>';
+
+        if ($patchStyle) {
+            $markup .= '<style type="text/css">' . $patchStyle . '</style>';
+        }
+
+        if ($patchScript) {
+            $markup .= '<script type="text/javascript">' . $patchScript . '</script>';
+        }
+
+        return $markup;
     }
 
     private function addRedirectMessageFilter(TemplateManager $templateMgr): void

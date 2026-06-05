@@ -24,6 +24,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
         if ($success && $this->getEnabled($mainContextId)) {
             $hookCallbacks = new HookCallbacks($this);
             Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
+            Hook::add('Common::UserDetails::AdditionalItems', $hookCallbacks->addInterestsPatchToUserDetailsForm(...));
             Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
             Hook::add('TemplateManager::fetch', $hookCallbacks->addInterestFilterToReviewerPanel(...));

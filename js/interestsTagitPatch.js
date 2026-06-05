@@ -1,6 +1,10 @@
 /* global jQuery */
 
 (function($) {
+	if (!$.fn.tagit || $.fn.tagit.soriPatched) {
+		return;
+	}
+
 	var originalTagit = $.fn.tagit;
 
 	var updateAutocompleteWidth = function(el) {
@@ -38,7 +42,60 @@
 		}
 	};
 
-	$.fn.tagit = function(method) {
+	var unbindAutocompleteScrollClose = function(el) {
+		var handlers = $(el).data('soriAutocompleteCloseHandlers');
+
+		if (!handlers) {
+			return;
+		}
+
+		if (document.removeEventListener) {
+			document.removeEventListener('wheel', handlers.close, true);
+			document.removeEventListener('mousewheel', handlers.close, true);
+			document.removeEventListener('DOMMouseScroll', handlers.close, true);
+			document.removeEventListener('scroll', handlers.close, true);
+		}
+		if (window.removeEventListener) {
+			window.removeEventListener('resize', handlers.close, true);
+		}
+
+		$(el).removeData('soriAutocompleteCloseHandlers');
+	};
+
+	var bindAutocompleteScrollClose = function(el) {
+		var $field = $(el);
+		var $input = $field.find('.tagit-new input[type="text"]');
+		var closeOnExternalMovement = function(event) {
+			var $widget = $input.autocomplete('widget');
+			var target = event.target;
+
+			if ($widget.length
+					&& (target === $widget[0] || $.contains($widget[0], target))) {
+				return;
+			}
+
+			$input.autocomplete('close');
+			unbindAutocompleteScrollClose(el);
+		};
+
+		unbindAutocompleteScrollClose(el);
+
+		if (document.addEventListener) {
+			document.addEventListener('wheel', closeOnExternalMovement, true);
+			document.addEventListener('mousewheel', closeOnExternalMovement, true);
+			document.addEventListener('DOMMouseScroll', closeOnExternalMovement, true);
+			document.addEventListener('scroll', closeOnExternalMovement, true);
+		}
+		if (window.addEventListener) {
+			window.addEventListener('resize', closeOnExternalMovement, true);
+		}
+
+		$field.data('soriAutocompleteCloseHandlers', {
+			close: closeOnExternalMovement
+		});
+	};
+
+	var soriTagit = function(method) {
 		if (typeof method !== 'string'
 				&& $(this).hasClass('interests')
 				&& !$(this).data('soriReinit')) {
@@ -111,9 +168,13 @@
 
 				updateInterestsUi(el, placeholder);
 				$input
-					.off('autocompleteopen.sori click.sori')
+					.off('autocompleteopen.sori autocompleteclose.sori click.sori')
 					.on('autocompleteopen.sori', function() {
 						updateAutocompleteWidth(el);
+						bindAutocompleteScrollClose(el);
+					})
+					.on('autocompleteclose.sori', function() {
+						unbindAutocompleteScrollClose(el);
 					})
 					.on('click.sori', function() {
 						$(this).autocomplete('search', '');
@@ -126,4 +187,8 @@
 
 		return originalTagit.apply(this, arguments);
 	};
+
+	soriTagit.soriPatched = true;
+	soriTagit.soriOriginal = originalTagit;
+	$.fn.tagit = soriTagit;
 })(jQuery);
