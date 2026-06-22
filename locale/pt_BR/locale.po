@@ -1,8 +1,8 @@
 msgid "plugins.generic.selectionOfReviewingInterests.displayName"
-msgstr "Seleção de Áreas de Interesse de Avaliação"
+msgstr "Áreas de interesse pré-definidas"
 
 msgid "plugins.generic.selectionOfReviewingInterests.description"
-msgstr "Adiciona um campo de seleção na Áreas de Interesse de Avaliação, com as opções sendo definidas a partir das configurações do plugin."
+msgstr "Permite definir, nas configurações do plugin, as opções de Áreas de Interesse para Avaliação que poderão ser escolhidas pelos avaliadores. Esses usuários podem selecionar apenas as opções pré-definidas e, caso não tenham nenhuma área cadastrada, são automaticamente redirecionados para a página de edição de perfil sempre que tentarem acessar o painel do OJS, até que definam ao menos uma área de interesse."
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "É necessário selecionar pelo menos uma área de interesse para avaliação na aba \"Papéis\" antes de acessar o sistema."
