@@ -12,7 +12,7 @@ This plugin replaces the reviewing interests field with a **predefined list of o
 - **The interests field is hidden during registration.** To keep the public sign-up form simple, the free-text reviewing interests field is removed from the registration page. Reviewers fill in their interests later, from the predefined list, on their profile.
 - **Editors can filter reviewers by interest.** When selecting a reviewer for a submission, editors get a "Filter by reviewing interest" option in the reviewer panel, so they can quickly narrow the list down to reviewers with the relevant expertise.
 
-> **Note:** The plugin only takes effect once you have configured at least one interest option. Until then, OJS keeps its default free-text behavior.
+> **Note:** The plugin only takes effect once you have configured at least one interest option. Until then, OJS keeps its default field behavior.
 
 ## How to use it
 
