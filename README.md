@@ -1,4 +1,4 @@
-# Selection Field in Reviewing Interests Area
+# Predefined reviewing interests
 
 This plugin adds a selection field in the Reviewing Interests Area, with options defined from the plugin settings.
 
