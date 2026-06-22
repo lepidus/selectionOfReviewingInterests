@@ -23,16 +23,38 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
 
         if ($success && $this->getEnabled($mainContextId)) {
             $hookCallbacks = new HookCallbacks($this);
-            Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
-            Hook::add('userdetailsform::display', $hookCallbacks->addInterestsScriptsOnUserDetailsFormDisplay(...));
-            Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
-            Hook::add('TemplateManager::fetch', $hookCallbacks->addInterestFilterToReviewerPanel(...));
-            Hook::add('API::users::reviewers::params', $hookCallbacks->addInterestFilterParam(...));
-            Hook::add('User::Collector', $hookCallbacks->filterReviewersByInterest(...));
+
+            if ($this->hasConfiguredInterestOptions()) {
+                Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
+                Hook::add('userdetailsform::display', $hookCallbacks->addInterestsScriptsOnUserDetailsFormDisplay(...));
+                Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
+                Hook::add('TemplateManager::fetch', $hookCallbacks->addInterestFilterToReviewerPanel(...));
+                Hook::add('API::users::reviewers::params', $hookCallbacks->addInterestFilterParam(...));
+                Hook::add('User::Collector', $hookCallbacks->filterReviewersByInterest(...));
+            }
         }
 
         return $success;
+    }
+
+    private function hasConfiguredInterestOptions(): bool
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $options = $this->getSetting($context->getId(), 'interestOptions') ?: [];
+        if (!is_array($options)) {
+            return false;
+        }
+
+        $options = array_map('trim', array_values($options));
+        return count(array_filter($options, function ($option) {
+            return $option !== '';
+        })) > 0;
     }
 
     public function setupGridHandler(string $hookName, array $params): bool
