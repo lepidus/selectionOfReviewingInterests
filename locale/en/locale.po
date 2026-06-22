@@ -32,4 +32,4 @@ msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionTe
 msgstr "Option text is required."
 
 msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.label"
-msgstr "Filter by interest area"
+msgstr "Filter by reviewing interests"
