@@ -24,7 +24,7 @@ class InterestOptionForm extends Form
             $this,
             'optionName',
             'required',
-            'plugins.generic.selectionOfReviewingInterests.form.optionName.required'
+            'plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required'
         ));
 
         $this->addCheck(new FormValidatorPost($this));
