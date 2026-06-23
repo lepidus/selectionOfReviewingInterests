@@ -1,3 +1,7 @@
+[![GitHub release](https://img.shields.io/github/v/release/lepidus/selectionOfReviewingInterests)](https://github.com/lepidus/selectionOfReviewingInterests/releases)
+[![License type](https://img.shields.io/github/license/lepidus/selectionOfReviewingInterests)](https://github.com/lepidus/selectionOfReviewingInterests/blob/main/LICENSE)
+[![Number of downloads](https://img.shields.io/github/downloads/lepidus/selectionOfReviewingInterests/total)](https://github.com/lepidus/selectionOfReviewingInterests/releases)
+
 # Predefined reviewing interests
 
 This plugin replaces the reviewing interests field with a **predefined list of options** configured in plugin settings.
