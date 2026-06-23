@@ -2,7 +2,7 @@ msgid "plugins.generic.selectionOfReviewingInterests.displayName"
 msgstr "Predefined reviewing interests"
 
 msgid "plugins.generic.selectionOfReviewingInterests.description"
-msgstr "Allows defining, in the plugin settings, the reviewing interest options that reviewers can choose from. These users can only select the predefined options and, if they have no interest area registered, they are automatically redirected to the profile editing page whenever they try to access the OJS dashboard, until they define at least one interest area."
+msgstr "Allows defining, in the plugin settings, the reviewing interest options that reviewers can choose from. These users can only select the predefined options and, if they have no reviewing interest registered, they are automatically redirected to the profile editing page whenever they try to access the OJS dashboard, until they define at least one reviewing interest."
 
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.emptyInterestsMessage"
 msgstr "You must select at least one reviewing interest in the \"Roles\" tab before you can access the system."
@@ -30,3 +30,6 @@ msgstr "Enter the text that will appear as a selectable reviewing interest optio
 
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.form.optionText.required"
 msgstr "Option text is required."
+
+msgid "plugins.generic.selectionOfReviewingInterests.reviewer.filter.label"
+msgstr "Filter by reviewing interests"

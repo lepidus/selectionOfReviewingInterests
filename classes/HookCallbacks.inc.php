@@ -345,7 +345,7 @@ class HookCallbacks
                 'param' => self::REVIEWER_INTEREST_FILTER_PARAM_PREFIX . $index,
                 'value' => $interestOption,
                 'title' => $interestOption,
-                'groupTitle' => 'Filter by interest area',
+                'groupTitle' => __('plugins.generic.selectionOfReviewingInterests.reviewer.filter.label'),
                 'showGroupTitle' => $index === 0,
                 'filterType' => 'reviewer-interest-filter',
             ];
