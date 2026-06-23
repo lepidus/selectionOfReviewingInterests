@@ -6,19 +6,21 @@
 
 # Intereses de revisión predefinidos
 
-Este módulo reemplaza el campo de intereses de revisión por una **lista predefinida de opciones** configurada en los ajustes del módulo.
+Este módulo reemplaza el campo de intereses de revisión por una **lista predefinida de opciones**.
 
 ![Demostración del módulo: definiendo las opciones y un revisor seleccionándolas](predefinedReviewingInterestsDemo.gif)
 
 ## Qué hace el módulo
 
-- **Usted define las opciones.** En los ajustes del módulo usted crea la lista de intereses de revisión que estará disponible en su revista (por ejemplo: _Salud Pública_, _Aprendizaje Automático_, _Historia Medieval_).
+- **El editor define los intereses de revisión posibles.** En los ajustes del módulo, el editor crea la lista de intereses de revisión que estará disponible en la revista (por ejemplo: _Salud Pública_, _Aprendizaje Automático_, _Historia Medieval_).
 - **Los revisores seleccionan en lugar de escribir.** En la página de perfil del usuario, el campo de intereses se convierte en un campo de selección múltiple. Los revisores pueden elegir una o más opciones, pero solo a partir de su lista predefinida.
 - **Se anima a los revisores a completarlo.** Un revisor que no tenga ningún interés seleccionado es redirigido automáticamente a su página de perfil cuando intenta entrar al panel de control, con un mensaje que le explica que debe seleccionar al menos un interés antes de continuar.
 - **El campo de intereses se oculta durante el registro.** Para mantener simple el formulario público de registro, el campo de texto libre de intereses de revisión se elimina de la página de registro. Los revisores completan sus intereses después, a partir de la lista predefinida, en su perfil.
 - **Los editores pueden filtrar revisores por interés.** Al seleccionar un revisor para un envío, los editores disponen de la opción "Filtrar por intereses de revisión" en el panel de revisores, de modo que pueden reducir rápidamente la lista a los revisores con la experiencia relevante.
 
 > **Nota:** El módulo solo entra en vigor una vez que haya configurado al menos una opción de interés. Hasta entonces, OJS mantiene el comportamiento predeterminado del campo.
+
+> **Nota:** Los intereses de revisión que se completaron antes de la activación del módulo permanecen registrados y se siguen mostrando en el campo de intereses. Con el módulo activado y configurado, los revisores solo pueden agregar intereses a partir de la lista predefinida, pero los que ya habían registrado anteriormente se mantienen (y aún pueden eliminarse).
 
 ## Compatibilidad
 
