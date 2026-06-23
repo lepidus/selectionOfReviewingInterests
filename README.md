@@ -6,19 +6,21 @@
 
 # Predefined reviewing interests
 
-This plugin replaces the reviewing interests field with a **predefined list of options** configured in plugin settings.
+This plugin replaces the reviewing interests field with a **predefined list of options**.
 
 ![Demonstration of the plugin: defining options and a reviewer selecting them](docs/predefinedReviewingInterestsDemo.gif)
 
 ## What the plugin does
 
-- **You define the options.** In the plugin settings you create the list of reviewing interests that will be available in your journal (for example: _Public Health_, _Machine Learning_, _Medieval History_).
+- **The editor defines the possible interests.** In the plugin settings, the editor creates the list of reviewing interests that will be available in the journal (for example: _Public Health_, _Machine Learning_, _Medieval History_).
 - **Reviewers select instead of type.** On the user's profile page, the interests field becomes a multi-select field. Reviewers can pick one or more options, but they can only choose from your predefined list.
 - **Reviewers are nudged to fill it in.** A reviewer who has no interest selected is automatically redirected to their profile page when they try to enter the dashboard, with a message explaining that they must select at least one interest before continuing.
 - **The interests field is hidden during registration.** To keep the public sign-up form simple, the free-text reviewing interests field is removed from the registration page. Reviewers fill in their interests later, from the predefined list, on their profile.
 - **Editors can filter reviewers by interest.** When selecting a reviewer for a submission, editors get a "Filter by reviewing interest" option in the reviewer panel, so they can quickly narrow the list down to reviewers with the relevant expertise.
 
 > **Note:** The plugin only takes effect once you have configured at least one interest option. Until then, OJS keeps its default field behavior.
+
+> **Note:** Reviewing interests that were filled in before the plugin was activated remain registered and continue to appear in the interests field. Once the plugin is active and configured, reviewers can only add interests from the predefined list, but any interests they had already registered are kept (and can still be removed).
 
 ## Compatibility
 
