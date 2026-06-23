@@ -2,11 +2,13 @@
 [![License type](https://img.shields.io/github/license/lepidus/selectionOfReviewingInterests)](https://github.com/lepidus/selectionOfReviewingInterests/blob/main/LICENSE)
 [![Number of downloads](https://img.shields.io/github/downloads/lepidus/selectionOfReviewingInterests/total)](https://github.com/lepidus/selectionOfReviewingInterests/releases)
 
+**English** | [Português Brasileiro](/docs/README-pt_BR.md) | [Español](/docs/README-es.md)
+
 # Predefined reviewing interests
 
 This plugin replaces the reviewing interests field with a **predefined list of options** configured in plugin settings.
 
-![Demonstration of the plugin: defining options and a reviewer selecting them](predefinedReviewingInterestsDemo.gif)
+![Demonstration of the plugin: defining options and a reviewer selecting them](docs/predefinedReviewingInterestsDemo.gif)
 
 ## What the plugin does
 
@@ -17,12 +19,6 @@ This plugin replaces the reviewing interests field with a **predefined list of o
 - **Editors can filter reviewers by interest.** When selecting a reviewer for a submission, editors get a "Filter by reviewing interest" option in the reviewer panel, so they can quickly narrow the list down to reviewers with the relevant expertise.
 
 > **Note:** The plugin only takes effect once you have configured at least one interest option. Until then, OJS keeps its default field behavior.
-
-## How to use it
-
-1. Go to `Settings` > `Website` > `Plugins`, find **Predefined reviewing interests** and enable it.
-2. Open the plugin settings and add the interest options you want to offer in your journal.
-3. That's it — reviewers will now select their interests from your list, and editors can filter by them.
 
 ## Compatibility
 
@@ -35,6 +31,12 @@ This plugin is compatible with OJS in the following versions:
 ## Installation
 
 Go to *Settings -> Website -> Plugins -> Plugin Gallery*. Click on **Predefined reviewing interests** and then click on *Install*.
+
+## How to use it
+
+1. Go to `Settings` > `Website` > `Plugins`, find **Predefined reviewing interests** and enable it.
+2. Open the plugin settings and add the interest options you want to offer in your journal.
+3. That's it — reviewers will now select their interests from your list, and editors can filter by them.
 
 ## License
 
