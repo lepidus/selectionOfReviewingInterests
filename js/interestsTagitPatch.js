@@ -63,6 +63,15 @@
 		$input.attr('placeholder', isEmpty ? placeholder : '');
 	};
 
+	var updateOpenAutocompletePosition = function(el) {
+		var $input = $(el).find('.tagit-new input[type="text"]');
+		var $widget = $input.autocomplete('widget');
+
+		if ($widget.length && $widget.is(':visible')) {
+			updateAutocompletePosition(el);
+		}
+	};
+
 	var unbindAutocompleteScrollClose = function(el) {
 		var handlers = $(el).data('soriAutocompleteCloseHandlers');
 
@@ -204,6 +213,7 @@
 						if (typeof originalAfterTagAdded === 'function') {
 							originalAfterTagAdded.call(this, event, ui);
 						}
+						updateOpenAutocompletePosition(el);
 					},
 					afterTagRemoved: function(event, ui) {
 						$(el).find('.tagit-new input[type="text"]').autocomplete();
@@ -211,6 +221,7 @@
 						if (typeof originalAfterTagRemoved === 'function') {
 							originalAfterTagRemoved.call(this, event, ui);
 						}
+						updateOpenAutocompletePosition(el);
 					}
 				});
 				var result = originalTagit.call(this, configuredOptions);
