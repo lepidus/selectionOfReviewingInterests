@@ -5,11 +5,13 @@ Cypress.Commands.add('openRolesTab', () => {
 
 Cypress.Commands.add('removeReviewingInterests', () => {
     cy.get('body').then(($body) => {
-        if (!$body.find('.interests .tagit-choice .tagit-close').length) {
+        const closeButton = $body.find('.interests .tagit-choice .tagit-close').get(0);
+
+        if (!closeButton) {
             return;
         }
 
-        cy.get('.interests .tagit-choice .tagit-close').first().click();
+        cy.wrap(closeButton).click({force: true});
         cy.removeReviewingInterests();
     });
 });
