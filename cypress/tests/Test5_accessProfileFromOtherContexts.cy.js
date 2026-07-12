@@ -69,7 +69,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
 	});
 
-	it('Free-text interests are preserved after saving form in journal with plugin', function () {
+	it('Free-text interests are preserved, but can not be recreated after removal', function () {
 		cy.login('agallego', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -84,5 +84,33 @@ describe('Accessing profile from other contexts works normally', function () {
 
 		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+
+		cy.get('.interests .tagit-choice')
+			.contains('Custom Research Topic')
+			.parents('.tagit-choice')
+			.find('.tagit-close')
+			.click();
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-label').contains('Custom Research Topic').should('not.exist');
+
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: 'Custom Research Topic'
+			}).appendTo($form);
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.contains('Select only the predefined reviewing interests.').should('be.visible');
+
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-label').contains('Custom Research Topic').should('not.exist');
 	});
 });

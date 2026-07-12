@@ -2,6 +2,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const reviewerName = 'Paul Hudson';
 	const reviewerUsername = 'phudson';
 	const reviewingInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
+	const unexpectedInterest = 'Interest injected while editing another user';
 	const submissionTitle = 'Condensing Water Availability Models to Focus on Specific Water Management Systems';
 
 	function openUserSearchFilter() {
@@ -78,6 +79,19 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.waitJQuery();
 	}
 
+	function rejectUnexpectedInterest() {
+		cy.get('form#userDetailsForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: unexpectedInterest
+			}).appendTo($form);
+		});
+		saveUserDetails();
+		cy.contains('Select only the predefined reviewing interests.').should('be.visible');
+		cy.get('.pkpModalCloseButton').click();
+	}
+
 	function openAddReviewerForSubmission(title) {
 		cy.visit('index.php/publicknowledge/submissions');
 		cy.get('button[id="active-button"]').click();
@@ -109,7 +123,11 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.login('dbarnes', null, 'publicknowledge');
 
 		openUserEditForm(reviewerUsername);
+		rejectUnexpectedInterest();
+
+		openUserEditForm(reviewerUsername);
 		selectReviewingInterestIfMissing(reviewingInterest);
+		cy.get('#userExtras .interests .tagit-label').contains(unexpectedInterest).should('not.exist');
 		saveUserDetails();
 
 		openAddReviewerForSubmission(submissionTitle);
