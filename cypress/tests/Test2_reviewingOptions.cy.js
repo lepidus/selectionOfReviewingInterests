@@ -18,7 +18,7 @@ describe('Configure reviewing interests options', function () {
             'Estado da arte e filosofia dos métodos científicos em hidrogeologia e áreas correlatas'
         ];
 
-        options.forEach((optionText) => {
+        function addOption(optionText) {
             cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
                 .contains('Add option')
                 .click();
@@ -34,6 +34,100 @@ describe('Configure reviewing interests options', function () {
 
             cy.waitJQuery();
             cy.contains(optionText).should('exist');
+        }
+
+        options.forEach((optionText) => {
+            addOption(optionText);
+        });
+
+        const temporaryOption = 'Temporary option used to test secure deletion';
+        addOption(temporaryOption);
+
+        cy.contains('tr.gridRow', temporaryOption)
+            .find('a[id*="-deleteOption-button-"]')
+            .then(($deleteLink) => {
+                const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+                const requestOptions = handler.linkActionRequest_.getOptions();
+                cy.wrap({
+                    url: requestOptions.remoteAction,
+                    csrfToken: requestOptions.csrfToken
+                }).as('deleteRequest');
+            });
+
+        cy.get('@deleteRequest').then((deleteRequest) => {
+            cy.request({
+                method: 'GET',
+                url: deleteRequest.url,
+                failOnStatusCode: false
+            }).its('body.status').should('eq', false);
+
+            cy.request({
+                method: 'POST',
+                url: deleteRequest.url,
+                form: true,
+                body: {}
+            }).its('body.status').should('eq', false);
+
+            cy.request({
+                method: 'POST',
+                url: deleteRequest.url,
+                form: true,
+                body: {csrfToken: 'invalid-token'}
+            }).its('body.status').should('eq', false);
+
+            cy.request({
+                method: 'POST',
+                url: deleteRequest.url.replace(/optionId=[^&]*/, 'optionId%5B%5D=0'),
+                form: true,
+                body: {csrfToken: deleteRequest.csrfToken}
+            }).its('body.status').should('eq', false);
+
+            cy.contains('tr.gridRow', temporaryOption).should('exist');
+
+            cy.login('agallego', null, 'publicknowledge');
+            cy.visit('index.php/publicknowledge/user/profile');
+            cy.get('#profileTabs').find('li a').contains('Roles').click();
+            cy.get('#rolesForm input[name="csrfToken"]').invoke('val').then((reviewerCsrfToken) => {
+                cy.request({
+                    method: 'POST',
+                    url: deleteRequest.url,
+                    form: true,
+                    body: {csrfToken: reviewerCsrfToken},
+                    failOnStatusCode: false
+                }).its('status').should('be.oneOf', [200, 403]);
+            });
+
+            cy.login('dbarnes', null, 'publicknowledge');
+            cy.visit('index.php/publicknowledge/submissions');
+            cy.contains('a', 'Website').click();
+            cy.waitJQuery();
+            cy.get('#plugins-button').click();
+            cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+            cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+            cy.waitJQuery();
+
+            cy.contains('tr.gridRow', temporaryOption)
+                .find('a[id*="-deleteOption-button-"]')
+                .then(($deleteLink) => {
+                    const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+                    const requestOptions = handler.linkActionRequest_.getOptions();
+                    cy.request({
+                        method: 'POST',
+                        url: requestOptions.remoteAction,
+                        form: true,
+                        body: {csrfToken: requestOptions.csrfToken}
+                    }).its('body.status').should('eq', true);
+                });
+
+            cy.visit('index.php/publicknowledge/submissions');
+            cy.contains('a', 'Website').click();
+            cy.waitJQuery();
+            cy.get('#plugins-button').click();
+            cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+            cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+            cy.waitJQuery();
+            cy.contains('tr.gridRow', temporaryOption).should('not.exist');
+            cy.contains('tr.gridRow', options[0]).should('exist');
         });
     });
 });

@@ -150,7 +150,14 @@ class InterestOptionsGridHandler extends GridHandler
 
     public function deleteOption($args, $request)
     {
+        if (!$request->isPost() || !$request->checkCSRF()) {
+            return new JSONMessage(false);
+        }
+
         $optionId = $request->getUserVar('optionId');
+        if (!is_string($optionId) || !preg_match('/\A[a-f0-9]{13}\z/D', $optionId)) {
+            return new JSONMessage(false);
+        }
 
         $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
