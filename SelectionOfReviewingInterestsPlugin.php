@@ -29,6 +29,7 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
                 Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
                 Hook::add('userdetailsform::display', $hookCallbacks->addInterestsScriptsOnUserDetailsFormDisplay(...));
                 Hook::add('registrationform::validate', $hookCallbacks->validateRegistrationInterests(...));
+                Hook::add('createreviewerform::validate', $hookCallbacks->validateRegistrationInterests(...));
                 Hook::add('rolesform::validate', $hookCallbacks->validateProfileInterests(...));
                 Hook::add('userdetailsform::validate', $hookCallbacks->validateUserDetailsInterests(...));
                 Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));

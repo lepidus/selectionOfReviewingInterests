@@ -75,6 +75,8 @@ describe('Accessing profile from other contexts works normally', function () {
 	it('Free-text interests are preserved after saving form in journal with plugin', function () {
 		const legacyInterest = 'Custom Research Topic';
 		const invalidInterestMessage = 'Select only the predefined reviewing interests.';
+		const firstJournalInterest = 'Gestão integrada dos recursos hídricos, com foco em usos conjuntivos e sustentabilidade';
+		const secondJournalInterest = 'Exclusive interest configured for the second journal';
 
 		cy.login('agallego', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/user/profile');
@@ -126,5 +128,53 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('.interests .tagit-new input').type('{enter}');
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
+
+		cy.logout();
+		cy.login('admin', 'admin', secondJournalPath);
+		cy.get('nav').contains('Settings').click();
+		cy.get('nav').contains('Website').click({force: true});
+		cy.get('button[id="plugins-button"]').click();
+		cy.get('input[id^=select-cell-selectionofreviewinginterests]').check();
+
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.waitJQuery();
+		cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
+			.contains('Add option')
+			.click();
+		cy.wait(1000);
+		cy.get('input[id^=optionName-]').clear().type(secondJournalInterest, {delay: 0});
+		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+		cy.contains('tr.gridRow', secondJournalInterest).should('exist');
+
+		cy.logout();
+		cy.login('sorisecurityregistration', 'SoriSecurityRegistration123!', secondJournalPath);
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: firstJournalInterest
+			}).appendTo($form);
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.contains(invalidInterestMessage).should('be.visible');
+
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-new input').type(secondJournalInterest, {delay: 0});
+		cy.get('.interests .tagit-new input').type('{enter}');
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-label').contains(secondJournalInterest).should('exist');
+		cy.get('.interests .tagit-label').contains(firstJournalInterest).should('not.exist');
 	});
 });
