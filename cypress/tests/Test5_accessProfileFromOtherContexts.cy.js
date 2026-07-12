@@ -96,6 +96,11 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.contains('.interests .tagit-choice', legacyInterest)
 			.find('.tagit-close')
 			.click();
+		cy.get('#rolesForm').then(($form) => {
+			$form.find('input[name="interests[]"]').filter((index, input) => {
+				return Cypress.$(input).val() === legacyInterest;
+			}).remove();
+		});
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
 

@@ -14,7 +14,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	}
 
 	function openUserEditForm(username) {
-		cy.get('.app__nav a:contains("Users & Roles")').click();
+		cy.visit('/index.php/publicknowledge/management/settings/access');
 		cy.waitJQuery();
 
 		openUserSearchFilter();
@@ -128,7 +128,8 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 				form: true,
 				failOnStatusCode: false
 			}).then((response) => {
-				expect(response.body.status).not.to.eq(true);
+				expect(response.statusCode).to.eq(200);
+				expect(response.body.status).to.eq(false);
 			});
 		});
 	}
@@ -174,7 +175,9 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.login('admin', 'admin', 'secondjournal');
 		cy.visit('index.php/secondjournal/submissions');
 		openPluginConfiguration();
+		cy.contains('tr.gridRow', secondJournalInterest).find('a.show_extras').click();
 		cy.contains('tr.gridRow', secondJournalInterest)
+			.next('tr.row_controls')
 			.find('a[id*="-deleteOption-button-"]')
 			.then(($deleteLink) => {
 				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
@@ -188,7 +191,9 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.login('dbarnes', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/submissions');
 		openPluginConfiguration();
+		cy.contains('tr.gridRow', reviewingInterest).find('a.show_extras').click();
 		cy.contains('tr.gridRow', reviewingInterest)
+			.next('tr.row_controls')
 			.find('a[id*="-deleteOption-button-"]')
 			.then(($deleteLink) => {
 				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);

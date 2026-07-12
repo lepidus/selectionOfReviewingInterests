@@ -33,7 +33,22 @@ describe('Registration form should not display reviewing interests field', funct
 		cy.get('form#register button[type="submit"]').click();
 		cy.contains(invalidInterestMessage).should('be.visible');
 
-		cy.get('input[name="interests[]"]').then(($interest) => $interest.remove());
+		cy.get('form#register').then(($form) => {
+			$form.find('input[name="interests[]"]').remove();
+		});
+		cy.get('#givenName').clear().type('Sori Security');
+		cy.get('#affiliation').clear().type('Security test');
+		cy.get('#country').select('Brazil');
+		cy.get('#email').clear().type(username + '@example.com');
+		cy.get('#username').clear().type(username);
+		cy.get('#password').type(password);
+		cy.get('#password2').type(password);
+		cy.get('form#register').then(($form) => {
+			const $checkbox = $form.find('input[name="privacyConsent"]');
+			if ($checkbox.length && !$checkbox.is(':checked')) {
+				cy.wrap($checkbox).check();
+			}
+		});
 		cy.get('form#register button[type="submit"]').click();
 		cy.location('pathname').should('not.include', '/user/register');
 	});

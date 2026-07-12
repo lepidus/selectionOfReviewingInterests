@@ -45,7 +45,9 @@ describe('Configure reviewing interests options', function () {
         cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
         cy.waitJQuery();
 
+        cy.contains('tr.gridRow', deletionTestOption).find('a.show_extras').click();
         cy.contains('tr.gridRow', deletionTestOption)
+            .next('tr.row_controls')
             .find('a[id*="-deleteOption-button-"]')
             .then(($deleteLink) => {
                 const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
