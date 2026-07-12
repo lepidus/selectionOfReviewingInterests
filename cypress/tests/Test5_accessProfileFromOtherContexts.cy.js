@@ -69,7 +69,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
 	});
 
-	it('Free-text interests are preserved, but can not be recreated after removal', function () {
+	it('Preserves legacy interests and isolates options and deletion by context', function () {
 		cy.login('agallego', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -112,5 +112,107 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
 		cy.get('.interests .tagit-label').contains('Custom Research Topic').should('not.exist');
+
+		const secondContextOption = 'Second journal exclusive interest';
+		const publicContextOption = 'Inovações em técnicas e instrumentação para campo e laboratório (e.g., hidrológicas, geoquímicas, geofísicas e matemáticas)';
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
+
+		function openPluginSettings(contextPath) {
+			cy.visit('index.php/' + contextPath + '/management/settings/website');
+			cy.get('#plugins-button').click();
+			cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+			cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+			cy.waitJQuery();
+		}
+
+		function assertUnauthorizedDeletion(username, password) {
+			cy.get('@secondDeleteRequest').then((deleteRequest) => {
+				cy.login(username, password, 'publicknowledge');
+				cy.visit('index.php/publicknowledge/user/profile');
+				cy.get('#profileTabs').find('li a').contains('Roles').click();
+				cy.get('#rolesForm input[name="csrfToken"]').invoke('val').then((csrfToken) => {
+					cy.request({
+						method: 'POST',
+						url: deleteRequest.url,
+						form: true,
+						body: {csrfToken: csrfToken},
+						failOnStatusCode: false
+					}).its('status').should('be.oneOf', [200, 403]);
+				});
+			});
+		}
+
+		cy.login('admin', 'admin');
+		cy.visit('index.php/' + secondJournalPath + '/management/settings/website');
+		cy.get('#plugins-button').click();
+		cy.get('input[id^=select-cell-selectionofreviewinginterests]').check();
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.waitJQuery();
+		cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
+			.contains('Add option')
+			.click();
+		cy.get('input[id^=optionName-]').clear().type(secondContextOption, {delay: 0});
+		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+		cy.contains('tr.gridRow', secondContextOption)
+			.find('a[id*="-deleteOption-button-"]')
+			.then(($deleteLink) => {
+				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+				const requestOptions = handler.linkActionRequest_.getOptions();
+				const url = new URL(requestOptions.remoteAction, window.location.origin);
+				cy.wrap({
+					url: requestOptions.remoteAction,
+					optionId: url.searchParams.get('optionId')
+				}).as('secondDeleteRequest');
+			});
+
+		cy.login('agallego', null, secondJournalPath);
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: publicContextOption
+			}).appendTo($form);
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.contains('Select only the predefined reviewing interests.').should('be.visible');
+
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-new input').click().type('{downarrow}{enter}');
+		cy.get('.interests .tagit-label').contains(secondContextOption).should('exist');
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+
+		assertUnauthorizedDeletion('dbuskins', null);
+		assertUnauthorizedDeletion('securitycommonuser', 'security-test-password');
+
+		cy.get('@secondDeleteRequest').then((secondDeleteRequest) => {
+			cy.login('dbarnes', null, 'publicknowledge');
+			openPluginSettings('publicknowledge');
+			cy.get('a[id*="-deleteOption-button-"]').first().then(($deleteLink) => {
+				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+				const requestOptions = handler.linkActionRequest_.getOptions();
+				const crossContextUrl = requestOptions.remoteAction.replace(
+					/optionId=[^&]*/,
+					'optionId=' + secondDeleteRequest.optionId
+				);
+				cy.request({
+					method: 'POST',
+					url: crossContextUrl,
+					form: true,
+					body: {csrfToken: requestOptions.csrfToken}
+				}).its('body.status').should('eq', true);
+			});
+		});
+
+		cy.login('admin', 'admin');
+		openPluginSettings(secondJournalPath);
+		cy.contains('tr.gridRow', secondContextOption).should('exist');
 	});
 });
