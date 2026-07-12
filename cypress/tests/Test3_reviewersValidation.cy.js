@@ -27,6 +27,21 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
         cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
         cy.waitJQuery();
 
+        cy.get('#rolesForm').then(($form) => {
+            $form.append('<input type="hidden" name="interests[]" value="Injected interest">');
+        });
+        cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+        cy.waitJQuery();
+
+        cy.contains(
+            'Select only reviewing interests configured for this journal. Previously saved interests may be preserved.'
+        ).should('be.visible');
+
+        cy.visit('index.php/publicknowledge/en/user/profile');
+        cy.openRolesTab();
+        cy.get('.interests .tagit-label').contains('Injected interest').should('not.exist');
+        cy.get('.interests .tagit-label').contains(itemText).should('be.visible');
+
         cy.visit('index.php/publicknowledge/en/dashboard/reviewAssignments');
         cy.url().should('include', '/dashboard');
     });

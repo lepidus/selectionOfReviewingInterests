@@ -3,10 +3,15 @@
 namespace APP\plugins\generic\selectionOfReviewingInterests\classes;
 
 use APP\core\Application;
+use APP\facades\Repo;
 use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingInterestsPlugin;
 use APP\template\TemplateManager;
 use Illuminate\Database\Query\Builder;
+use PKP\controllers\grid\settings\user\form\UserDetailsForm;
+use PKP\form\Form;
 use PKP\security\Role;
+use PKP\user\form\RolesForm;
+use PKP\user\User;
 
 class HookCallbacks
 {
@@ -43,6 +48,54 @@ class HookCallbacks
                 $request->redirect(null, 'user', 'profile');
             }
             $this->registerFilterSelectComponent($templateMgr, $context->getId());
+        }
+
+        return false;
+    }
+
+    public function validateSubmittedInterests(string $hookName, array $params): bool
+    {
+        $form = $params[0];
+        if (!$form instanceof Form) {
+            return false;
+        }
+
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $configuredInterests = $this->normalizeInterests(
+            $this->plugin->getSetting($context->getId(), 'interestOptions') ?: []
+        );
+        if ($configuredInterests === []) {
+            return false;
+        }
+
+        $submittedInterests = $this->normalizeInterests($form->getData('interests'));
+        if ($submittedInterests === null) {
+            $form->addError(
+                'interests',
+                __('plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest')
+            );
+            return false;
+        }
+
+        $existingInterests = [];
+        $targetUser = $this->getTargetUser($form);
+        if ($targetUser) {
+            $existingInterests = $this->normalizeInterests(
+                Repo::userInterest()->getInterestsForUser($targetUser)
+            ) ?? [];
+        }
+
+        $allowedInterests = array_unique(array_merge($configuredInterests, $existingInterests));
+        if (array_diff($submittedInterests, $allowedInterests) !== []) {
+            $form->addError(
+                'interests',
+                __('plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest')
+            );
         }
 
         return false;
@@ -312,5 +365,47 @@ class HookCallbacks
     {
         $this->registrationFilterCallback = $this->registrationInterestsFilter(...);
         $templateMgr->registerFilter('output', $this->registrationFilterCallback);
+    }
+
+    private function getTargetUser(Form $form): ?User
+    {
+        if ($form instanceof RolesForm) {
+            return $form->getUser();
+        }
+
+        if ($form instanceof UserDetailsForm && isset($form->user)) {
+            return $form->user;
+        }
+
+        return null;
+    }
+
+    private function normalizeInterests(mixed $interests): ?array
+    {
+        if ($interests === null || $interests === '') {
+            return [];
+        }
+
+        if (is_string($interests)) {
+            $interests = [$interests];
+        }
+
+        if (!is_array($interests)) {
+            return null;
+        }
+
+        $normalized = [];
+        foreach ($interests as $interest) {
+            if (!is_string($interest)) {
+                return null;
+            }
+
+            $interest = trim($interest);
+            if ($interest !== '') {
+                $normalized[] = $interest;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 }

@@ -83,12 +83,47 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 
 		cy.get('#userDetailsForm').should('exist');
 		selectConfiguredInterest();
+		cy.get('#userDetailsForm').then(($form) => {
+			$form.append('<input data-cy="injected-admin-interest" type="hidden" name="interests[]" value="Injected admin interest">');
+			cy.intercept('POST', $form.attr('action')).as('manipulatedAdminUpdate');
+		});
 
 		cy.get('#userDetailsForm button[id^=submitFormButton]')
 			.scrollIntoView()
 			.click({force: true});
 
 		cy.waitJQuery();
+		cy.wait('@manipulatedAdminUpdate').its('response.body.status').should('eq', false);
+		cy.get('#userDetailsForm').should('exist');
+		cy.get('[data-cy="injected-admin-interest"]').remove();
+		cy.get('#userDetailsForm button[id^=submitFormButton]')
+			.scrollIntoView()
+			.click({force: true});
+		cy.waitJQuery();
+		cy.logout();
+	}
+
+	function preserveEditedUsersLegacyInterest() {
+		openPublicKnowledgeUsersFromHostedJournals();
+
+		cy.get('#userGridContainer')
+			.contains('tr', 'agallego')
+			.as('adelaGallegoRow');
+
+		cy.get('@adelaGallegoRow').find('a.show_extras').click({force: true});
+		cy.get('@adelaGallegoRow')
+			.next('tr.row_controls')
+			.contains('Edit')
+			.click({force: true});
+
+		cy.get('#userDetailsForm #userExtras .interests .tagit-label')
+			.contains('Administrative Legacy Topic')
+			.should('exist');
+		cy.get('#userDetailsForm').then(($form) => {
+			cy.intercept('POST', $form.attr('action')).as('preserveEditedUserLegacy');
+		});
+		cy.get('#userDetailsForm button[id^=submitFormButton]').click({force: true});
+		cy.wait('@preserveEditedUserLegacy').its('response.body.status').should('eq', true);
 		cy.logout();
 	}
 
@@ -117,6 +152,7 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 	}
 
 	it('Displays Paul Hudson when filtering reviewers by a configured interest', function () {
+		preserveEditedUsersLegacyInterest();
 		assignInterestToPaulHudson();
 		filterReviewersByInterest();
 	});

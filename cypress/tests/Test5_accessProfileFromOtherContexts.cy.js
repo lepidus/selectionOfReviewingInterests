@@ -56,6 +56,9 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('.interests .tagit-new input').type('Custom Research Topic', {delay: 0});
 		cy.get('.interests .tagit-new input').type('{enter}');
 		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('exist');
+		cy.get('.interests .tagit-new input').type('Administrative Legacy Topic', {delay: 0});
+		cy.get('.interests .tagit-new input').type('{enter}');
+		cy.get('.interests .tagit-choice').contains('Administrative Legacy Topic').should('exist');
 
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
@@ -68,6 +71,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.waitJQuery();
 
 		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
+		cy.get('.interests .tagit-choice').contains('Administrative Legacy Topic').should('be.visible');
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
 	});
 
@@ -85,6 +89,34 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.waitJQuery();
 
 		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
+		cy.get('.interests .tagit-choice').contains('Administrative Legacy Topic').should('be.visible');
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+
+		cy.get('.interests .tagit-choice')
+			.contains('Custom Research Topic')
+			.closest('.tagit-choice')
+			.find('.tagit-close')
+			.click({force: true});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+
+		cy.visit('index.php/publicknowledge/en/user/profile');
+		cy.get('a[name="roles"]').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('not.exist');
+
+		cy.get('#rolesForm').then(($form) => {
+			$form.append('<input type="hidden" name="interests[]" value="Custom Research Topic">');
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+		cy.contains(
+			'Select only reviewing interests configured for this journal. Previously saved interests may be preserved.'
+		).should('be.visible');
+
+		cy.visit('index.php/publicknowledge/en/user/profile');
+		cy.get('a[name="roles"]').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('not.exist');
 	});
 });
