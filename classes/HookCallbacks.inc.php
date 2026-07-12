@@ -155,7 +155,7 @@ class HookCallbacks
     public function userDetailsInterestsAssetsFilter($output, $templateMgr)
     {
         if (strpos($output, 'id="userDetailsForm"') === false
-                || strpos($output, 'class="interests"') === false) {
+                || !preg_match('/class="[^"]*\binterests\b[^"]*"/', $output)) {
             return $output;
         }
 
