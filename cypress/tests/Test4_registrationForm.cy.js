@@ -27,6 +27,8 @@ describe('Registration form should not display reviewing interests field', funct
 		cy.get('form#register').then(($form) => {
 			$form.find('input[name="interests[]"]').remove();
 		});
+		cy.get('input[name="password"]').type('security-test-password');
+		cy.get('input[name="password2"]').type('security-test-password');
 		cy.get('form#register button[type="submit"]').click();
 		cy.location('pathname').should('not.include', '/user/register');
 		cy.visit('index.php/publicknowledge/user/profile');

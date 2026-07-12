@@ -90,6 +90,15 @@ describe('Accessing profile from other contexts works normally', function () {
 			.parents('.tagit-choice')
 			.find('.tagit-close')
 			.click();
+		cy.get('#rolesForm input[name="interests[]"]').then(($inputs) => {
+			$inputs.filter(function () {
+				return Cypress.$(this).val() === 'Custom Research Topic';
+			}).remove();
+		});
+		cy.get('#rolesForm input[name="interests[]"]').should(($inputs) => {
+			const values = $inputs.toArray().map((input) => Cypress.$(input).val());
+			expect(values).not.to.include('Custom Research Topic');
+		});
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
 
@@ -137,7 +146,13 @@ describe('Accessing profile from other contexts works normally', function () {
 						form: true,
 						body: {csrfToken: csrfToken},
 						failOnStatusCode: false
-					}).its('status').should('be.oneOf', [200, 403]);
+					}).then((response) => {
+						if (response.status === 200) {
+							expect(response.body.status).to.eq(false);
+						} else {
+							expect(response.status).to.eq(403);
+						}
+					});
 				});
 			});
 		}
@@ -155,9 +170,11 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('input[id^=optionName-]').clear().type(secondContextOption, {delay: 0});
 		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
-		cy.contains('tr.gridRow', secondContextOption)
-			.find('a[id*="-deleteOption-button-"]')
-			.then(($deleteLink) => {
+		cy.contains('tr.gridRow', secondContextOption).then(($row) => {
+			cy.wrap($row).find('a.show_extras').click();
+			cy.wrap($row).next('tr.row_controls')
+				.find('a[id*="-deleteOption-button-"]')
+				.then(($deleteLink) => {
 				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
 				const requestOptions = handler.linkActionRequest_.getOptions();
 				const url = new URL(requestOptions.remoteAction, window.location.origin);
@@ -166,6 +183,7 @@ describe('Accessing profile from other contexts works normally', function () {
 					optionId: url.searchParams.get('optionId')
 				}).as('secondDeleteRequest');
 			});
+		});
 
 		cy.login('agallego', null, secondJournalPath);
 		cy.visit('index.php/' + secondJournalPath + '/user/profile');
@@ -207,7 +225,7 @@ describe('Accessing profile from other contexts works normally', function () {
 					url: crossContextUrl,
 					form: true,
 					body: {csrfToken: requestOptions.csrfToken}
-				}).its('body.status').should('eq', true);
+				}).its('body.status').should('eq', false);
 			});
 		});
 

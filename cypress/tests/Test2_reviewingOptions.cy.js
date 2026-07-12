@@ -43,9 +43,11 @@ describe('Configure reviewing interests options', function () {
         const temporaryOption = 'Temporary option used to test secure deletion';
         addOption(temporaryOption);
 
-        cy.contains('tr.gridRow', temporaryOption)
-            .find('a[id*="-deleteOption-button-"]')
-            .then(($deleteLink) => {
+        cy.contains('tr.gridRow', temporaryOption).then(($row) => {
+            cy.wrap($row).find('a.show_extras').click();
+            cy.wrap($row).next('tr.row_controls')
+                .find('a[id*="-deleteOption-button-"]')
+                .then(($deleteLink) => {
                 const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
                 const requestOptions = handler.linkActionRequest_.getOptions();
                 cy.wrap({
@@ -53,6 +55,7 @@ describe('Configure reviewing interests options', function () {
                     csrfToken: requestOptions.csrfToken
                 }).as('deleteRequest');
             });
+        });
 
         cy.get('@deleteRequest').then((deleteRequest) => {
             cy.request({
@@ -106,9 +109,11 @@ describe('Configure reviewing interests options', function () {
             cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
             cy.waitJQuery();
 
-            cy.contains('tr.gridRow', temporaryOption)
-                .find('a[id*="-deleteOption-button-"]')
-                .then(($deleteLink) => {
+            cy.contains('tr.gridRow', temporaryOption).then(($row) => {
+                cy.wrap($row).find('a.show_extras').click();
+                cy.wrap($row).next('tr.row_controls')
+                    .find('a[id*="-deleteOption-button-"]')
+                    .then(($deleteLink) => {
                     const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
                     const requestOptions = handler.linkActionRequest_.getOptions();
                     cy.request({
@@ -118,6 +123,7 @@ describe('Configure reviewing interests options', function () {
                         body: {csrfToken: requestOptions.csrfToken}
                     }).its('body.status').should('eq', true);
                 });
+            });
 
             cy.visit('index.php/publicknowledge/submissions');
             cy.contains('a', 'Website').click();

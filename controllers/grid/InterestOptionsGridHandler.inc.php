@@ -161,10 +161,12 @@ class InterestOptionsGridHandler extends GridHandler
 
         $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
-        if (isset($options[$optionId])) {
-            unset($options[$optionId]);
-            $this->plugin->updateSetting($this->contextId, 'interestOptions', $options);
+        if (!isset($options[$optionId])) {
+            return new JSONMessage(false);
         }
+
+        unset($options[$optionId]);
+        $this->plugin->updateSetting($this->contextId, 'interestOptions', $options);
 
         return DAO::getDataChangedEvent($optionId);
     }
