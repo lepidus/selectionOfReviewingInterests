@@ -35,5 +35,66 @@ describe('Configure reviewing interests options', function () {
             cy.waitJQuery();
             cy.contains(optionText).should('exist');
         });
+
+        const deletionTestOption = 'Disposable option for deletion security tests';
+        cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
+            .contains('Add option')
+            .click();
+        cy.wait(1000);
+        cy.get('input[id^=optionName-]').clear().type(deletionTestOption, {delay: 0});
+        cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
+        cy.waitJQuery();
+
+        cy.contains('tr.gridRow', deletionTestOption)
+            .find('a[id*="-deleteOption-button-"]')
+            .then(($deleteLink) => {
+                const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+                const requestOptions = handler.linkActionRequest_.getOptions();
+                const remoteAction = requestOptions.remoteAction;
+                const csrfToken = requestOptions.csrfToken;
+
+                cy.request({
+                    method: 'GET',
+                    url: remoteAction,
+                    failOnStatusCode: false
+                }).its('body.status').should('eq', false);
+
+                cy.request({
+                    method: 'POST',
+                    url: remoteAction,
+                    body: {},
+                    form: true,
+                    failOnStatusCode: false
+                }).its('body.status').should('eq', false);
+
+                cy.request({
+                    method: 'POST',
+                    url: remoteAction,
+                    body: {csrfToken: 'invalid-token'},
+                    form: true,
+                    failOnStatusCode: false
+                }).its('body.status').should('eq', false);
+
+                const invalidIdUrl = new URL(remoteAction);
+                invalidIdUrl.searchParams.set('optionId', 'not-a-valid-option-id');
+                cy.request({
+                    method: 'POST',
+                    url: invalidIdUrl.toString(),
+                    body: {csrfToken},
+                    form: true,
+                    failOnStatusCode: false
+                }).its('body.status').should('eq', false);
+
+                cy.request({
+                    method: 'POST',
+                    url: remoteAction,
+                    body: {csrfToken},
+                    form: true
+                }).its('body.status').should('eq', true);
+            });
+
+        cy.reload();
+        cy.waitJQuery();
+        cy.contains(deletionTestOption).should('not.exist');
     });
 });

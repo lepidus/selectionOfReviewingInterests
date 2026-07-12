@@ -104,6 +104,34 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.waitJQuery();
 	}
 
+	function openPluginConfiguration() {
+		cy.get('nav').contains('Settings').click();
+		cy.get('nav').contains('Website').click({force: true});
+		cy.get('button[id="plugins-button"]').click();
+
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.waitJQuery();
+	}
+
+	function assertDeletionForbiddenForUser(username, password, remoteAction) {
+		cy.logout();
+		cy.login(username, password, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('input[name="csrfToken"]').first().invoke('val').then((csrfToken) => {
+			cy.request({
+				method: 'POST',
+				url: remoteAction,
+				body: {csrfToken},
+				form: true,
+				failOnStatusCode: false
+			}).then((response) => {
+				expect(response.body.status).not.to.eq(true);
+			});
+		});
+	}
+
 	it('shows Paul Hudson in Add Reviewer when filtering by the selected interest', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
 
@@ -140,5 +168,41 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		filterReviewersByInterest(reviewingInterest);
 
 		cy.contains(reviewerName);
+
+		cy.visit('index.php/publicknowledge/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', reviewingInterest)
+			.find('a[id*="-deleteOption-button-"]')
+			.then(($deleteLink) => {
+				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+				const requestOptions = handler.linkActionRequest_.getOptions();
+				const remoteAction = requestOptions.remoteAction;
+				const csrfToken = requestOptions.csrfToken;
+
+				const otherContextUrl = remoteAction.replace('/publicknowledge/', '/secondjournal/');
+				cy.request({
+					method: 'POST',
+					url: otherContextUrl,
+					body: {csrfToken},
+					form: true,
+					failOnStatusCode: false
+				}).then((response) => {
+					expect(response.body.status).not.to.eq(true);
+				});
+
+				assertDeletionForbiddenForUser('asmecher', null, remoteAction);
+				assertDeletionForbiddenForUser('agallego', null, remoteAction);
+				assertDeletionForbiddenForUser(
+					'sorisecurityregistration',
+					'SoriSecurityRegistration123!',
+					remoteAction
+				);
+			});
+
+		cy.logout();
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', reviewingInterest).should('exist');
 	});
 });
