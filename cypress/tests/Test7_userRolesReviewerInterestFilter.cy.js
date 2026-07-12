@@ -3,6 +3,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const reviewerUsername = 'phudson';
 	const reviewingInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
 	const submissionTitle = 'Condensing Water Availability Models to Focus on Specific Water Management Systems';
+	const managerLegacyInterest = 'Manager Legacy Topic';
 
 	function openUserSearchFilter() {
 		cy.get('#userGridContainer').within(() => {
@@ -109,6 +110,31 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		openUserEditForm(reviewerUsername);
 		selectReviewingInterestIfMissing(reviewingInterest);
 		saveUserDetails();
+
+		openUserEditForm(reviewerUsername);
+		cy.get('#userDetailsForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: managerLegacyInterest
+			}).appendTo($form);
+		});
+		cy.intercept('POST', '**/grid/settings/user/user-grid/update-user*').as('invalidUserSave');
+		cy.get('form#userDetailsForm button[id^="submitFormButton"]')
+			.scrollIntoView()
+			.click();
+		cy.wait('@invalidUserSave').then(({response}) => {
+			expect(response.statusCode).to.eq(200);
+			expect(response.body.status).to.eq(false);
+		});
+
+		openUserEditForm(reviewerUsername);
+		cy.get('#userExtras .interests .tagit-label')
+			.contains(managerLegacyInterest)
+			.should('not.exist');
+		cy.get('#userExtras .interests .tagit-label')
+			.contains(reviewingInterest)
+			.should('exist');
 
 		openAddReviewerForSubmission(submissionTitle);
 		filterReviewersByInterest(reviewingInterest);

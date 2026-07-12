@@ -7,6 +7,8 @@ use APP\plugins\generic\selectionOfReviewingInterests\SelectionOfReviewingIntere
 use APP\template\TemplateManager;
 use Illuminate\Database\Query\Builder;
 use PKP\security\Role;
+use PKP\user\InterestManager;
+use PKP\user\User;
 
 class HookCallbacks
 {
@@ -128,6 +130,26 @@ class HookCallbacks
             [$this, 'userDetailsInterestsAssetsFilter']
         );
 
+        return false;
+    }
+
+    public function validateRegistrationInterests(string $hookName, array $params): bool
+    {
+        $this->validateSubmittedInterests($params[0], null);
+        return false;
+    }
+
+    public function validateProfileInterests(string $hookName, array $params): bool
+    {
+        $form = $params[0];
+        $this->validateSubmittedInterests($form, $form->getUser());
+        return false;
+    }
+
+    public function validateUserDetailsInterests(string $hookName, array $params): bool
+    {
+        $form = $params[0];
+        $this->validateSubmittedInterests($form, $form->user ?? null);
         return false;
     }
 
@@ -319,5 +341,76 @@ class HookCallbacks
     {
         $this->registrationFilterCallback = $this->registrationInterestsFilter(...);
         $templateMgr->registerFilter('output', $this->registrationFilterCallback);
+    }
+
+    private function validateSubmittedInterests($form, ?User $user): void
+    {
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return;
+        }
+
+        $configuredOptions = $this->plugin->getSetting($context->getId(), 'interestOptions') ?: [];
+        if (!is_array($configuredOptions)) {
+            return;
+        }
+
+        $allowedInterests = $this->normalizeInterests(array_values($configuredOptions));
+        if (empty($allowedInterests)) {
+            return;
+        }
+
+        $submittedInterests = $this->normalizeInterests($form->getData('interests'), $hasInvalidValue);
+        $existingInterests = [];
+        if ($user && $user->getId()) {
+            $existingInterests = (new InterestManager())->getInterestsForUser($user);
+        }
+
+        $acceptedInterests = array_merge($allowedInterests, $existingInterests);
+        foreach ($submittedInterests as $interest) {
+            if (!in_array($interest, $acceptedInterests, true)) {
+                $hasInvalidValue = true;
+                break;
+            }
+        }
+
+        if ($hasInvalidValue) {
+            $form->addError(
+                'interests',
+                __('plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest')
+            );
+        }
+    }
+
+    private function normalizeInterests($interests, ?bool &$hasInvalidValue = null): array
+    {
+        $hasInvalidValue = false;
+        if ($interests === null || $interests === '') {
+            return [];
+        }
+
+        if (!is_array($interests)) {
+            if (!is_string($interests)) {
+                $hasInvalidValue = true;
+                return [];
+            }
+            $interests = explode(',', $interests);
+        }
+
+        $normalizedInterests = [];
+        foreach ($interests as $interest) {
+            if (!is_string($interest)) {
+                $hasInvalidValue = true;
+                continue;
+            }
+
+            $interest = trim($interest);
+            if ($interest !== '') {
+                $normalizedInterests[] = $interest;
+            }
+        }
+
+        return array_values(array_unique($normalizedInterests));
     }
 }

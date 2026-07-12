@@ -73,6 +73,9 @@ describe('Accessing profile from other contexts works normally', function () {
 	});
 
 	it('Free-text interests are preserved after saving form in journal with plugin', function () {
+		const legacyInterest = 'Custom Research Topic';
+		const invalidInterestMessage = 'Select only the predefined reviewing interests.';
+
 		cy.login('agallego', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -85,7 +88,43 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
 
-		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
+		cy.get('.interests .tagit-choice').contains(legacyInterest).should('be.visible');
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+
+		cy.contains('.interests .tagit-choice', legacyInterest)
+			.find('.tagit-close')
+			.click();
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
+
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-choice').contains(legacyInterest).should('not.exist');
+
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: legacyInterest
+			}).appendTo($form);
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.contains(invalidInterestMessage).should('be.visible');
+
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-choice').contains(legacyInterest).should('not.exist');
+
+		cy.logout();
+		cy.login('dbarnes', null, secondJournalPath);
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-new input').type('Manager Legacy Topic', {delay: 0});
+		cy.get('.interests .tagit-new input').type('{enter}');
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.waitJQuery();
 	});
 });
