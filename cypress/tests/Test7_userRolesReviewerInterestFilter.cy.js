@@ -4,6 +4,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const reviewingInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
 	const submissionTitle = 'Condensing Water Availability Models to Focus on Specific Water Management Systems';
 	const managerLegacyInterest = 'Manager Legacy Topic';
+	const secondJournalInterest = 'Exclusive interest configured for the second journal';
 
 	function openUserSearchFilter() {
 		cy.get('#userGridContainer').within(() => {
@@ -169,6 +170,22 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 
 		cy.contains(reviewerName);
 
+		cy.logout();
+		cy.login('admin', 'admin', 'secondjournal');
+		cy.visit('index.php/secondjournal/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', secondJournalInterest)
+			.find('a[id*="-deleteOption-button-"]')
+			.then(($deleteLink) => {
+				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
+				const remoteAction = handler.linkActionRequest_.getOptions().remoteAction;
+				const foreignOptionId = new URL(remoteAction).searchParams.get('optionId');
+				expect(foreignOptionId).to.match(/^[a-f0-9]{13}$/);
+				cy.wrap(foreignOptionId).as('foreignOptionId');
+			});
+
+		cy.logout();
+		cy.login('dbarnes', null, 'publicknowledge');
 		cy.visit('index.php/publicknowledge/submissions');
 		openPluginConfiguration();
 		cy.contains('tr.gridRow', reviewingInterest)
@@ -179,15 +196,16 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 				const remoteAction = requestOptions.remoteAction;
 				const csrfToken = requestOptions.csrfToken;
 
-				const otherContextUrl = remoteAction.replace('/publicknowledge/', '/secondjournal/');
-				cy.request({
-					method: 'POST',
-					url: otherContextUrl,
-					body: {csrfToken},
-					form: true,
-					failOnStatusCode: false
-				}).then((response) => {
-					expect(response.body.status).not.to.eq(true);
+				cy.get('@foreignOptionId').then((foreignOptionId) => {
+					const foreignIdOnCurrentContextUrl = new URL(remoteAction);
+					foreignIdOnCurrentContextUrl.searchParams.set('optionId', foreignOptionId);
+					cy.request({
+						method: 'POST',
+						url: foreignIdOnCurrentContextUrl.toString(),
+						body: {csrfToken},
+						form: true,
+						failOnStatusCode: false
+					}).its('body.status').should('eq', false);
 				});
 
 				assertDeletionForbiddenForUser('asmecher', null, remoteAction);
@@ -198,6 +216,12 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 					remoteAction
 				);
 			});
+
+		cy.logout();
+		cy.login('admin', 'admin', 'secondjournal');
+		cy.visit('index.php/secondjournal/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', secondJournalInterest).should('exist');
 
 		cy.logout();
 		cy.login('dbarnes', null, 'publicknowledge');
