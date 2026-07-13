@@ -227,7 +227,7 @@ describe('Accessing profile from other contexts works normally', function () {
 				failOnStatusCode: false
 			}).then((response) => {
 				expect(response.status).to.eq(200);
-				expect(JSON.stringify(response.body)).to.contain('dataChanged');
+				expect(response.body.status).to.eq(true);
 			});
 		});
 		cy.visit('index.php/' + secondJournalPath + '/user/profile');
