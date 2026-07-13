@@ -1,6 +1,6 @@
 describe('Configure reviewing interests options', function () {
     function closeLatestModal() {
-        cy.get('.pkpModalCloseButton:visible').last().click();
+        cy.get('.pkpModalCloseButton:visible').last().click({force: true});
     }
 
     it('Create options', function () {
@@ -95,6 +95,7 @@ describe('Configure reviewing interests options', function () {
 
             cy.contains('tr.gridRow', temporaryOption).should('exist');
 
+            cy.logout();
             cy.login('agallego', null, 'publicknowledge');
             cy.visit('index.php/publicknowledge/user/profile');
             cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -108,6 +109,7 @@ describe('Configure reviewing interests options', function () {
                 }).its('status').should('be.oneOf', [200, 403]);
             });
 
+            cy.logout();
             cy.login('dbarnes', null, 'publicknowledge');
             cy.visit('index.php/publicknowledge/submissions');
             cy.contains('a', 'Website').click();

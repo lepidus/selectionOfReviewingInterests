@@ -2,7 +2,7 @@ describe('Accessing profile from other contexts works normally', function () {
 	const secondJournalPath = 'secondjournal';
 
 	function closeLatestModal() {
-		cy.get('.pkpModalCloseButton:visible').last().click();
+		cy.get('.pkpModalCloseButton:visible').last().click({force: true});
 	}
 
 	it('Creates a second journal', function () {
@@ -140,6 +140,7 @@ describe('Accessing profile from other contexts works normally', function () {
 
 		function assertUnauthorizedDeletion(username, password) {
 			cy.get('@secondDeleteRequest').then((deleteRequest) => {
+				cy.logout();
 				cy.login(username, password, 'publicknowledge');
 				cy.visit('index.php/publicknowledge/user/profile');
 				cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -161,6 +162,7 @@ describe('Accessing profile from other contexts works normally', function () {
 			});
 		}
 
+		cy.logout();
 		cy.login('admin', 'admin');
 		cy.visit('index.php/' + secondJournalPath + '/management/settings/website');
 		cy.get('#plugins-button').click();
@@ -193,6 +195,7 @@ describe('Accessing profile from other contexts works normally', function () {
 			});
 		});
 
+		cy.logout();
 		cy.login('agallego', null, secondJournalPath);
 		cy.visit('index.php/' + secondJournalPath + '/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
@@ -219,6 +222,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		assertUnauthorizedDeletion('securitycommonuser', 'security-test-password');
 
 		cy.get('@secondDeleteRequest').then((secondDeleteRequest) => {
+			cy.logout();
 			cy.login('dbarnes', null, 'publicknowledge');
 			openPluginSettings('publicknowledge');
 			cy.get('a[id*="-deleteOption-button-"]').first().then(($deleteLink) => {
@@ -241,6 +245,7 @@ describe('Accessing profile from other contexts works normally', function () {
 			});
 		});
 
+		cy.logout();
 		cy.login('admin', 'admin');
 		openPluginSettings(secondJournalPath);
 		cy.contains('tr.gridRow', secondContextOption).should('exist');
