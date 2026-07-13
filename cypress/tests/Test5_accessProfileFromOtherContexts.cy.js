@@ -176,21 +176,28 @@ describe('Accessing profile from other contexts works normally', function () {
 			.contains('Add option')
 			.click();
 		cy.get('input[id^=optionName-]').clear().type(secondContextOption, {delay: 0});
-		cy.server();
-		cy.route('GET', '**/interest-options-grid/fetch-row*').as('secondOptionRow');
-		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
-		cy.wait('@secondOptionRow').then((xhr) => {
-			expect(xhr.status).to.eq(200);
-			const fetchRowUrl = new URL(xhr.url, window.location.origin);
-			const optionId = fetchRowUrl.searchParams.get('rowId');
+		cy.get('#interestOptionForm').then(($form) => {
+			const updateUrl = $form.attr('action');
+			cy.request({
+				method: 'POST',
+				url: updateUrl,
+				body: $form.serialize(),
+				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+				failOnStatusCode: false
+			}).then((response) => {
+				expect(response.status).to.eq(200);
+				expect(response.body.status).to.eq(true);
+				const optionId = String(response.body.elementId);
 			expect(optionId).to.match(/^[a-f0-9]{13}$/);
-			fetchRowUrl.pathname = fetchRowUrl.pathname.replace(/fetch-row$/, 'delete-option');
-			fetchRowUrl.search = '';
-			fetchRowUrl.searchParams.set('optionId', optionId);
+				const deleteUrl = new URL(updateUrl, window.location.origin);
+				deleteUrl.pathname = deleteUrl.pathname.replace(/update-option$/, 'delete-option');
+				deleteUrl.search = '';
+				deleteUrl.searchParams.set('optionId', optionId);
 			cy.wrap({
-				url: fetchRowUrl.toString(),
+				url: deleteUrl.toString(),
 				optionId: optionId
 			}).as('secondDeleteRequest');
+			});
 		});
 
 		cy.logout();
