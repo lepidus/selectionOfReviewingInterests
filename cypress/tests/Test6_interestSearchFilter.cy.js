@@ -56,13 +56,13 @@ describe('Filtering reviews by interests', function () {
         });
 
         submitReviewerCreation().then((response) => {
-            expect(response.statusCode).to.eq(200);
+            expect(response.status).to.eq(200);
             expect(JSON.stringify(response.body)).to.contain(invalidInterestMessage);
         });
 
         getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
         submitReviewerCreation().then((response) => {
-            expect(response.statusCode).to.eq(200);
+            expect(response.status).to.eq(200);
             expect(JSON.stringify(response.body)).not.to.contain('already in use');
             expect(JSON.stringify(response.body)).to.contain('dataChanged');
         });
