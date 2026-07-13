@@ -71,6 +71,7 @@ describe('Accessing profile from other contexts works normally', function () {
 
 		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
 		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+		cy.wait(1000);
 	});
 
 	it('Preserves legacy interests and isolates options and deletion by context', function () {
