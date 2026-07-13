@@ -39,13 +39,18 @@ describe('Accessing profile from other contexts works normally', function () {
 			cy.wrap($row).find('a.show_extras').click({force: true});
 			return cy.get('#' + rowId + '-control-row')
 				.contains('a', 'Delete')
-				.then(($button) => {
-					const handler = Cypress.$.pkp.classes.Handler.getHandler($button);
-					const options = handler.linkActionRequest_.getOptions();
-					return {
-						url: options.remoteAction,
-						csrfToken: options.csrfToken,
-					};
+				.then(($deleteLink) => {
+					const request = $deleteLink.data('pkp.handler').linkActionRequest_;
+					cy.wrap($deleteLink).click({force: true});
+					return cy.then(() => {
+						const modalHandler = request.$modal_.data('pkp.handler');
+						const deleteRequest = {
+							url: modalHandler.remoteAction_,
+							csrfToken: modalHandler.postData_.csrfToken,
+						};
+						modalHandler.modalClose();
+						return deleteRequest;
+					});
 				});
 		});
 	}

@@ -1,4 +1,24 @@
 describe('Configure reviewing interests options', function () {
+    function getDeleteRequestForOption(optionText) {
+        return cy.contains('tr', optionText).then(($row) => {
+            const rowId = $row.attr('id');
+            cy.wrap($row).find('a.show_extras').click({force: true});
+            return cy.get('#' + rowId + '-control-row').contains('a', 'Delete').then(($deleteLink) => {
+                const request = $deleteLink.data('pkp.handler').linkActionRequest_;
+                cy.wrap($deleteLink).click({force: true});
+                return cy.then(() => {
+                    const modalHandler = request.$modal_.data('pkp.handler');
+                    const deleteRequest = {
+                        url: modalHandler.remoteAction_,
+                        csrfToken: modalHandler.postData_.csrfToken,
+                    };
+                    modalHandler.modalClose();
+                    return deleteRequest;
+                });
+            });
+        });
+    }
+
     function openPluginSettings() {
         cy.visit('/index.php/publicknowledge/en/management/settings/website#plugins');
         cy.get('button[id="plugins-button"]').click();
@@ -44,15 +64,9 @@ describe('Configure reviewing interests options', function () {
         let deleteUrl;
         let csrfToken;
 
-        cy.contains('tr', temporaryOption).then(($row) => {
-            const rowId = $row.attr('id');
-            cy.wrap($row).find('a.show_extras').click({force: true});
-            cy.get('#' + rowId + '-control-row').contains('a', 'Delete').then(($button) => {
-                const handler = Cypress.$.pkp.classes.Handler.getHandler($button);
-                const options = handler.linkActionRequest_.getOptions();
-                deleteUrl = options.remoteAction;
-                csrfToken = options.csrfToken;
-            });
+        getDeleteRequestForOption(temporaryOption).then((request) => {
+            deleteUrl = request.url;
+            csrfToken = request.csrfToken;
         });
 
         cy.then(() => cy.request({
@@ -128,16 +142,11 @@ describe('Configure reviewing interests options', function () {
         openPluginSettings();
         cy.contains(temporaryOption).should('exist');
 
-        cy.then(() => {
-            const button = Cypress.$('tr:contains("' + temporaryOption + '")')
-                .next('tr.row_controls')
-                .find('a:contains("Delete")');
-            const handler = Cypress.$.pkp.classes.Handler.getHandler(button);
-            const options = handler.linkActionRequest_.getOptions();
+        getDeleteRequestForOption(temporaryOption).then((request) => {
             return cy.request({
                 method: 'POST',
-                url: options.remoteAction,
-                body: {csrfToken: options.csrfToken},
+                url: request.url,
+                body: {csrfToken: request.csrfToken},
                 form: true,
             });
         }).its('body.status').should('eq', true);

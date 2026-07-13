@@ -24,13 +24,20 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
         cy.openRolesTab();
         cy.selectReviewingInterest(itemText);
 
+        cy.intercept('POST', '**/save-roles*').as('saveAllowedInterest');
         cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+        cy.wait('@saveAllowedInterest').its('response.body.status').should('eq', true);
         cy.waitJQuery();
 
+        cy.visit('index.php/publicknowledge/en/user/profile');
+        cy.openRolesTab();
+        cy.get('.interests').should('contain.text', itemText);
         cy.get('#rolesForm').then(($form) => {
             $form.append('<input type="hidden" name="interests[]" value="Injected interest">');
         });
+        cy.intercept('POST', '**/save-roles*').as('rejectInjectedInterest');
         cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+        cy.wait('@rejectInjectedInterest').its('response.body.status').should('eq', false);
         cy.waitJQuery();
 
         cy.contains(
