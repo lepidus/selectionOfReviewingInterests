@@ -242,24 +242,19 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('@secondDeleteRequest').then((secondDeleteRequest) => {
 			cy.logout();
 			cy.login('dbarnes', null, 'publicknowledge');
-			openPluginSettings('publicknowledge');
-			cy.get('a[id*="-deleteOption-button-"]').first().then(($deleteLink) => {
-				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
-				cy.wrap($deleteLink).click({force: true});
-				cy.then(() => {
-					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
-					const crossContextUrl = modalHandler.remoteAction_.replace(
-						/optionId=[^&]*/,
-						'optionId=' + secondDeleteRequest.optionId
-					);
-					cy.request({
-						method: 'POST',
-						url: crossContextUrl,
-						form: true,
-						body: {csrfToken: modalHandler.postData_.csrfToken}
-					}).its('body.status').should('eq', false);
-					closeLatestModal();
-				});
+			cy.visit('index.php/publicknowledge/user/profile');
+			cy.get('#profileTabs').find('li a').contains('Roles').click();
+			cy.get('#rolesForm input[name="csrfToken"]').invoke('val').then((csrfToken) => {
+				const crossContextUrl = secondDeleteRequest.url.replace(
+					'/index.php/' + secondJournalPath + '/',
+					'/index.php/publicknowledge/'
+				);
+				cy.request({
+					method: 'POST',
+					url: crossContextUrl,
+					form: true,
+					body: {csrfToken: csrfToken}
+				}).its('body.status').should('eq', false);
 			});
 		});
 
