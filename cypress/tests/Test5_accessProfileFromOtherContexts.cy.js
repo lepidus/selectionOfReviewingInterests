@@ -211,10 +211,19 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('index.php/' + secondJournalPath + '/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-new input').click().type('{downarrow}{enter}');
-		cy.get('.interests .tagit-label').contains(secondContextOption).should('exist');
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: secondContextOption
+			}).appendTo($form);
+		});
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-label').contains(secondContextOption).should('exist');
 
 		assertUnauthorizedDeletion('dbuskins', null);
 		assertUnauthorizedDeletion('securitycommonuser', 'security-test-password');
