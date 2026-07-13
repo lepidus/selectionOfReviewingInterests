@@ -17,7 +17,6 @@ describe('Filtering reviews by interests', function () {
 
     it('Accessing the interests filter', function () {
         const reviewerUsername = 'sori_created_reviewer';
-        const invalidInterestMessage = 'Select only the predefined reviewing interests.';
 
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('.listPanel__itemSubtitle:visible:contains("Finocchiaro: Arguments About Arguments")').first()
@@ -57,7 +56,8 @@ describe('Filtering reviews by interests', function () {
 
         submitReviewerCreation().then((response) => {
             expect(response.status).to.eq(200);
-            expect(JSON.stringify(response.body)).to.contain(invalidInterestMessage);
+            expect(JSON.stringify(response.body)).not.to.contain('dataChanged');
+            expect(JSON.stringify(response.body)).to.contain('Injected interest in reviewer creation');
         });
 
         getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
