@@ -184,7 +184,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('@secondOptionRow').find('a.show_extras').click();
 		cy.get('@secondOptionRow').next('tr.row_controls').find('a[id*="-deleteOption-button-"]').then(($deleteLink) => {
 			const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
-			cy.wrap($deleteLink).click();
+			cy.wrap($deleteLink).click({force: true});
 			cy.then(() => {
 				const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
 				const deleteUrl = new URL(modalHandler.remoteAction_, window.location.origin);
