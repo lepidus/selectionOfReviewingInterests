@@ -1,6 +1,10 @@
 describe('Accessing profile from other contexts works normally', function () {
 	const secondJournalPath = 'secondjournal';
 
+	function closeLatestModal() {
+		cy.get('.pkpModalCloseButton:visible').last().click();
+	}
+
 	it('Creates a second journal', function () {
 		cy.login('admin', 'admin');
 		cy.visit('/index.php/index/admin/contexts');
@@ -184,7 +188,7 @@ describe('Accessing profile from other contexts works normally', function () {
 						url: modalHandler.remoteAction_,
 						optionId: url.searchParams.get('optionId')
 					}).as('secondDeleteRequest');
-					cy.get('.pkpModalCloseButton').click();
+					closeLatestModal();
 				});
 			});
 		});
@@ -232,7 +236,7 @@ describe('Accessing profile from other contexts works normally', function () {
 						form: true,
 						body: {csrfToken: modalHandler.postData_.csrfToken}
 					}).its('body.status').should('eq', false);
-					cy.get('.pkpModalCloseButton').click();
+					closeLatestModal();
 				});
 			});
 		});

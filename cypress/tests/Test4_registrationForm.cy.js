@@ -35,7 +35,14 @@ describe('Registration form should not display reviewing interests field', funct
 		cy.visit('index.php/publicknowledge/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-label').contains('Interest injected into registration').should('not.exist');
+		cy.get('.interests').should('be.visible');
+		cy.get('#rolesForm').should(($form) => {
+			expect($form.text()).not.to.include('Interest injected into registration');
+			const interests = $form.find('input[name="interests[]"]')
+				.toArray()
+				.map((input) => Cypress.$(input).val());
+			expect(interests).not.to.include('Interest injected into registration');
+		});
 		cy.logout();
 	});
 });

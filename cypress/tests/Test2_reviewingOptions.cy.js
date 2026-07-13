@@ -1,4 +1,8 @@
 describe('Configure reviewing interests options', function () {
+    function closeLatestModal() {
+        cy.get('.pkpModalCloseButton:visible').last().click();
+    }
+
     it('Create options', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.contains('a', 'Website').click();
@@ -56,7 +60,7 @@ describe('Configure reviewing interests options', function () {
                         url: modalHandler.remoteAction_,
                         csrfToken: modalHandler.postData_.csrfToken
                     }).as('deleteRequest');
-                    cy.get('.pkpModalCloseButton').click();
+                    closeLatestModal();
                 });
             });
         });
@@ -128,7 +132,7 @@ describe('Configure reviewing interests options', function () {
                             form: true,
                             body: {csrfToken: modalHandler.postData_.csrfToken}
                         }).its('body.status').should('eq', true);
-                        cy.get('.pkpModalCloseButton').click();
+                        closeLatestModal();
                     });
                 });
             });
