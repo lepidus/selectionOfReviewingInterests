@@ -175,13 +175,17 @@ describe('Accessing profile from other contexts works normally', function () {
 			cy.wrap($row).next('tr.row_controls')
 				.find('a[id*="-deleteOption-button-"]')
 				.then(($deleteLink) => {
-				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-				const requestOptions = handler.linkActionRequest_.getOptions();
-				const url = new URL(requestOptions.remoteAction, window.location.origin);
-				cy.wrap({
-					url: requestOptions.remoteAction,
-					optionId: url.searchParams.get('optionId')
-				}).as('secondDeleteRequest');
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					const url = new URL(modalHandler.remoteAction_, window.location.origin);
+					cy.wrap({
+						url: modalHandler.remoteAction_,
+						optionId: url.searchParams.get('optionId')
+					}).as('secondDeleteRequest');
+					cy.get('.pkpModalCloseButton').click();
+				});
 			});
 		});
 
@@ -214,18 +218,22 @@ describe('Accessing profile from other contexts works normally', function () {
 			cy.login('dbarnes', null, 'publicknowledge');
 			openPluginSettings('publicknowledge');
 			cy.get('a[id*="-deleteOption-button-"]').first().then(($deleteLink) => {
-				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-				const requestOptions = handler.linkActionRequest_.getOptions();
-				const crossContextUrl = requestOptions.remoteAction.replace(
-					/optionId=[^&]*/,
-					'optionId=' + secondDeleteRequest.optionId
-				);
-				cy.request({
-					method: 'POST',
-					url: crossContextUrl,
-					form: true,
-					body: {csrfToken: requestOptions.csrfToken}
-				}).its('body.status').should('eq', false);
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					const crossContextUrl = modalHandler.remoteAction_.replace(
+						/optionId=[^&]*/,
+						'optionId=' + secondDeleteRequest.optionId
+					);
+					cy.request({
+						method: 'POST',
+						url: crossContextUrl,
+						form: true,
+						body: {csrfToken: modalHandler.postData_.csrfToken}
+					}).its('body.status').should('eq', false);
+					cy.get('.pkpModalCloseButton').click();
+				});
 			});
 		});
 

@@ -48,12 +48,16 @@ describe('Configure reviewing interests options', function () {
             cy.wrap($row).next('tr.row_controls')
                 .find('a[id*="-deleteOption-button-"]')
                 .then(($deleteLink) => {
-                const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-                const requestOptions = handler.linkActionRequest_.getOptions();
-                cy.wrap({
-                    url: requestOptions.remoteAction,
-                    csrfToken: requestOptions.csrfToken
-                }).as('deleteRequest');
+                const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+                cy.wrap($deleteLink).click();
+                cy.then(() => {
+                    const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+                    cy.wrap({
+                        url: modalHandler.remoteAction_,
+                        csrfToken: modalHandler.postData_.csrfToken
+                    }).as('deleteRequest');
+                    cy.get('.pkpModalCloseButton').click();
+                });
             });
         });
 
@@ -114,14 +118,18 @@ describe('Configure reviewing interests options', function () {
                 cy.wrap($row).next('tr.row_controls')
                     .find('a[id*="-deleteOption-button-"]')
                     .then(($deleteLink) => {
-                    const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-                    const requestOptions = handler.linkActionRequest_.getOptions();
-                    cy.request({
-                        method: 'POST',
-                        url: requestOptions.remoteAction,
-                        form: true,
-                        body: {csrfToken: requestOptions.csrfToken}
-                    }).its('body.status').should('eq', true);
+                    const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+                    cy.wrap($deleteLink).click();
+                    cy.then(() => {
+                        const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+                        cy.request({
+                            method: 'POST',
+                            url: modalHandler.remoteAction_,
+                            form: true,
+                            body: {csrfToken: modalHandler.postData_.csrfToken}
+                        }).its('body.status').should('eq', true);
+                        cy.get('.pkpModalCloseButton').click();
+                    });
                 });
             });
 
