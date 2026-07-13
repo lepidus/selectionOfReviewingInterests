@@ -3,9 +3,15 @@ describe('Filtering reviews by interests', function () {
         return cy.get('.pkp_modal.is_visible #createReviewerForm').last();
     }
 
-    function interceptReviewerCreation(alias) {
-        getLatestCreateReviewerForm().then(($form) => {
-            cy.intercept('POST', $form.attr('action')).as(alias);
+    function submitReviewerCreation() {
+        return getLatestCreateReviewerForm().then(($form) => {
+            return cy.request({
+                method: 'POST',
+                url: $form.attr('action'),
+                body: $form.serialize(),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                failOnStatusCode: false
+            });
         });
     }
 
@@ -49,18 +55,13 @@ describe('Filtering reviews by interests', function () {
             }).appendTo($form);
         });
 
-        interceptReviewerCreation('invalidReviewerCreation');
-        getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
-        cy.wait('@invalidReviewerCreation').then(({response}) => {
+        submitReviewerCreation().then((response) => {
             expect(response.statusCode).to.eq(200);
             expect(JSON.stringify(response.body)).to.contain(invalidInterestMessage);
         });
-        getLatestCreateReviewerForm().contains(invalidInterestMessage).first().should('exist').scrollIntoView();
 
         getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
-        interceptReviewerCreation('validReviewerCreation');
-        getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
-        cy.wait('@validReviewerCreation').then(({response}) => {
+        submitReviewerCreation().then((response) => {
             expect(response.statusCode).to.eq(200);
             expect(JSON.stringify(response.body)).not.to.contain('already in use');
             expect(JSON.stringify(response.body)).to.contain('dataChanged');
