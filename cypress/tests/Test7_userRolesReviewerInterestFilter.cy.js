@@ -73,6 +73,25 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		});
 	}
 
+	function appendCanonicalizationCases($form, validInterest) {
+		['', '   ', validInterest, '  ' + validInterest + '  '].forEach((interest) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: interest
+			}).appendTo($form);
+		});
+	}
+
+	function assertCanonicalInterest($form, validInterest) {
+		const interests = $form.find('input[name="interests[]"]')
+			.toArray()
+			.map((input) => Cypress.$(input).val());
+
+		expect(interests.filter((interest) => interest === validInterest)).to.have.length(1);
+		expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+	}
+
 	function saveUserDetails() {
 		cy.intercept('POST', '**/grid/settings/user/user-grid/update-user*').as('userSaved');
 		cy.get('form#userDetailsForm button[id^="submitFormButton"]')
@@ -143,9 +162,15 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 
 		openUserEditForm(reviewerUsername);
 		selectReviewingInterestIfMissing(reviewingInterest);
+		cy.get('#userDetailsForm').then(($form) => {
+			appendCanonicalizationCases($form, reviewingInterest);
+		});
 		saveUserDetails();
 
 		openUserEditForm(reviewerUsername);
+		cy.get('#userDetailsForm').should(($form) => {
+			assertCanonicalInterest($form, reviewingInterest);
+		});
 		cy.get('#userDetailsForm').then(($form) => {
 			Cypress.$('<input>', {
 				type: 'hidden',

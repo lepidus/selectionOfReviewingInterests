@@ -3,6 +3,7 @@ describe('Registration form should not display reviewing interests field', funct
 		const username = 'sorisecurityregistration';
 		const password = 'SoriSecurityRegistration123!';
 		const invalidInterestMessage = 'Select only the predefined reviewing interests.';
+		const configuredInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
 
 		cy.visit('/index.php/publicknowledge/user/register');
 		cy.get('#reviewerOptinGroup').should('exist');
@@ -48,9 +49,28 @@ describe('Registration form should not display reviewing interests field', funct
 			if ($checkbox.length && !$checkbox.is(':checked')) {
 				cy.wrap($checkbox).check();
 			}
+
+			[configuredInterest, '', '   ', configuredInterest, '  ' + configuredInterest + '  ']
+				.forEach((interest) => {
+					Cypress.$('<input>', {
+						type: 'hidden',
+						name: 'interests[]',
+						value: interest
+					}).appendTo($form);
+				});
 		});
 		cy.get('form#register button[type="submit"]').click();
 		cy.get('form#register').should('not.exist');
 		cy.get('.page_register_complete').should('be.visible');
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('#rolesForm').should(($form) => {
+			const interests = $form.find('input[name="interests[]"]')
+				.toArray()
+				.map((input) => Cypress.$(input).val());
+			expect(interests.filter((interest) => interest === configuredInterest)).to.have.length(1);
+			expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+		});
 	});
 });

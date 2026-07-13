@@ -362,6 +362,7 @@ class HookCallbacks
         }
 
         $submittedInterests = $this->normalizeInterests($form->getData('interests'), $hasInvalidValue);
+        $form->setData('interests', $submittedInterests);
         $existingInterests = [];
         if ($user && $user->getId()) {
             $existingInterests = (new InterestManager())->getInterestsForUser($user);
