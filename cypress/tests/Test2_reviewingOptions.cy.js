@@ -48,9 +48,10 @@ describe('Configure reviewing interests options', function () {
             const rowId = $row.attr('id');
             cy.wrap($row).find('a.show_extras').click({force: true});
             cy.get('#' + rowId + '-control-row').contains('a', 'Delete').then(($button) => {
-                const request = $button.data('pkp.handler').linkActionRequest_;
-                deleteUrl = request.remoteAction_;
-                csrfToken = request.postData_.csrfToken;
+                const handler = Cypress.$.pkp.classes.Handler.getHandler($button);
+                const options = handler.linkActionRequest_.getOptions();
+                deleteUrl = options.remoteAction;
+                csrfToken = options.csrfToken;
             });
         });
 
@@ -116,10 +117,8 @@ describe('Configure reviewing interests options', function () {
                     form: true,
                     failOnStatusCode: false,
                 }).then((response) => {
-                    expect(response.status).to.be.oneOf([200, 401, 403]);
-                    if (response.status === 200 && response.body && typeof response.body === 'object') {
-                        expect(response.body.status).to.eq(false);
-                    }
+                    expect(response.status).to.eq(200);
+                    expect(response.body.status).to.eq(false);
                 });
             });
             cy.logout();
@@ -133,11 +132,12 @@ describe('Configure reviewing interests options', function () {
             const button = Cypress.$('tr:contains("' + temporaryOption + '")')
                 .next('tr.row_controls')
                 .find('a:contains("Delete")');
-            const request = button.data('pkp.handler').linkActionRequest_;
+            const handler = Cypress.$.pkp.classes.Handler.getHandler(button);
+            const options = handler.linkActionRequest_.getOptions();
             return cy.request({
                 method: 'POST',
-                url: request.remoteAction_,
-                body: {csrfToken: request.postData_.csrfToken},
+                url: options.remoteAction,
+                body: {csrfToken: options.csrfToken},
                 form: true,
             });
         }).its('body.status').should('eq', true);

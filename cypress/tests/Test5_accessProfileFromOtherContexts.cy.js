@@ -40,10 +40,11 @@ describe('Accessing profile from other contexts works normally', function () {
 			return cy.get('#' + rowId + '-control-row')
 				.contains('a', 'Delete')
 				.then(($button) => {
-					const request = $button.data('pkp.handler').linkActionRequest_;
+					const handler = Cypress.$.pkp.classes.Handler.getHandler($button);
+					const options = handler.linkActionRequest_.getOptions();
 					return {
-						url: request.remoteAction_,
-						csrfToken: request.postData_.csrfToken,
+						url: options.remoteAction,
+						csrfToken: options.csrfToken,
 					};
 				});
 		});
@@ -118,9 +119,9 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
 
-		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
-		cy.get('.interests .tagit-choice').contains('Administrative Legacy Topic').should('be.visible');
-		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+		cy.get('.interests').should('contain.text', 'Custom Research Topic');
+		cy.get('.interests').should('contain.text', 'Administrative Legacy Topic');
+		cy.get('.interests').should('contain.text', 'Estudos teóricos');
 	});
 
 	it('Free-text interests are preserved after saving form in journal with plugin', function () {
@@ -136,22 +137,23 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
 
-		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('be.visible');
-		cy.get('.interests .tagit-choice').contains('Administrative Legacy Topic').should('be.visible');
-		cy.get('.interests .tagit-choice').contains('Estudos teóricos').should('be.visible');
+		cy.get('.interests').should('contain.text', 'Custom Research Topic');
+		cy.get('.interests').should('contain.text', 'Administrative Legacy Topic');
+		cy.get('.interests').should('contain.text', 'Estudos teóricos');
 
-		cy.get('.interests .tagit-choice')
-			.contains('Custom Research Topic')
-			.closest('.tagit-choice')
-			.find('.tagit-close')
-			.click({force: true});
+		cy.get('.interests li')
+			.filter((index, item) => Cypress.$(item).text().trim() === 'Custom Research Topic')
+			.then(($item) => $item.remove());
+		cy.get('input[name="interests[]"][value="Custom Research Topic"]')
+			.then(($input) => $input.remove());
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
 
 		cy.visit('index.php/publicknowledge/en/user/profile');
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('not.exist');
+		cy.get('.interests').should('not.contain.text', 'Custom Research Topic');
+		cy.get('input[name="interests[]"][value="Custom Research Topic"]').should('not.exist');
 
 		cy.get('#rolesForm').then(($form) => {
 			$form.append('<input type="hidden" name="interests[]" value="Custom Research Topic">');
@@ -165,7 +167,8 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('index.php/publicknowledge/en/user/profile');
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-choice').contains('Custom Research Topic').should('not.exist');
+		cy.get('.interests').should('not.contain.text', 'Custom Research Topic');
+		cy.get('input[name="interests[]"][value="Custom Research Topic"]').should('not.exist');
 
 		let secondDeleteRequest;
 
@@ -201,7 +204,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('/index.php/' + secondJournalPath + '/en/user/profile');
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-choice').contains(secondJournalOption).should('exist');
+		cy.get('.interests').should('contain.text', secondJournalOption);
 
 		cy.get('#rolesForm').then(($form) => {
 			$form.append('<input data-cy="main-context-interest" type="hidden" name="interests[]" value="' + mainJournalOption + '">');
@@ -214,8 +217,8 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('/index.php/' + secondJournalPath + '/en/user/profile');
 		cy.get('a[name="roles"]').click();
 		cy.waitJQuery();
-		cy.get('.interests .tagit-choice').contains(mainJournalOption).should('not.exist');
-		cy.get('.interests .tagit-choice').contains(secondJournalOption).should('exist');
+		cy.get('.interests').should('not.contain.text', mainJournalOption);
+		cy.get('.interests').should('contain.text', secondJournalOption);
 		cy.logout();
 
 		cy.login('dbarnes', null, 'publicknowledge');

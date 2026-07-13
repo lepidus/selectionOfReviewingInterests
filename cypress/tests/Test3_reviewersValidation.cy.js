@@ -39,8 +39,8 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
 
         cy.visit('index.php/publicknowledge/en/user/profile');
         cy.openRolesTab();
-        cy.get('.interests .tagit-label').contains('Injected interest').should('not.exist');
-        cy.get('.interests .tagit-label').contains(itemText).should('be.visible');
+        cy.get('.interests').should('not.contain.text', 'Injected interest');
+        cy.get('.interests').should('contain.text', itemText);
 
         cy.visit('index.php/publicknowledge/en/dashboard/reviewAssignments');
         cy.url().should('include', '/dashboard');

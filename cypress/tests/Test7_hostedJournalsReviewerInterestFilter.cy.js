@@ -95,7 +95,7 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 		cy.waitJQuery();
 		cy.wait('@manipulatedAdminUpdate').its('response.body.status').should('eq', false);
 		cy.get('#userDetailsForm').should('exist');
-		cy.get('[data-cy="injected-admin-interest"]').remove();
+		cy.get('[data-cy="injected-admin-interest"]').then(($input) => $input.remove());
 		cy.get('#userDetailsForm button[id^=submitFormButton]')
 			.scrollIntoView()
 			.click({force: true});
