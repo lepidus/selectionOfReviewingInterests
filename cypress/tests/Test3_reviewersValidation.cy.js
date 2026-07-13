@@ -1,6 +1,25 @@
 import '../support/commands.js';
 
 describe('Reviewers must not use OJS without reviewing interests', function () {
+    function appendCanonicalizationCases($form, validInterest) {
+        ['', '   ', validInterest, '  ' + validInterest + '  '].forEach((interest) => {
+            $form.append(Cypress.$('<input>', {
+                type: 'hidden',
+                name: 'interests[]',
+                value: interest
+            }));
+        });
+    }
+
+    function assertCanonicalInterest($form, validInterest) {
+        const interests = $form.find('input[name="interests[]"]')
+            .toArray()
+            .map((input) => Cypress.$(input).val());
+
+        expect(interests.filter((interest) => interest === validInterest)).to.have.length(1);
+        expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+    }
+
     it('Reviewer without interests login', function () {
 
         let notificationText = 'You must select at least one reviewing interest in the "Roles" tab before you can access the system.';
@@ -33,6 +52,25 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
         cy.openRolesTab();
         cy.get('.interests').should('contain.text', itemText);
         cy.get('#rolesForm').then(($form) => {
+            appendCanonicalizationCases($form, itemText);
+            cy.request({
+                method: 'POST',
+                url: $form.attr('action'),
+                body: $form.serialize(),
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                failOnStatusCode: false
+            }).then((response) => {
+                expect(response.status).to.eq(200);
+                expect(response.body.status).to.eq(true);
+            });
+        });
+
+        cy.visit('index.php/publicknowledge/en/user/profile');
+        cy.openRolesTab();
+        cy.get('#rolesForm').should(($form) => {
+            assertCanonicalInterest($form, itemText);
+        });
+        cy.get('#rolesForm').then(($form) => {
             $form.append('<input type="hidden" name="interests[]" value="Injected interest">');
         });
         cy.intercept('POST', '**/save-roles*').as('rejectInjectedInterest');
@@ -48,6 +86,9 @@ describe('Reviewers must not use OJS without reviewing interests', function () {
         cy.openRolesTab();
         cy.get('.interests').should('not.contain.text', 'Injected interest');
         cy.get('.interests').should('contain.text', itemText);
+        cy.get('#rolesForm').should(($form) => {
+            assertCanonicalInterest($form, itemText);
+        });
 
         cy.visit('index.php/publicknowledge/en/dashboard/reviewAssignments');
         cy.url().should('include', '/dashboard');

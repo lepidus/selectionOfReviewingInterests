@@ -82,6 +82,8 @@ class HookCallbacks
             return false;
         }
 
+        $form->setData('interests', $submittedInterests);
+
         $existingInterests = [];
         $targetUser = $this->getTargetUser($form);
         if ($targetUser) {

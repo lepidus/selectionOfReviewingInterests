@@ -65,6 +65,25 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 			.should('exist');
 	}
 
+	function appendCanonicalizationCases($form) {
+		['', '   ', interestOption, '  ' + interestOption + '  '].forEach((interest) => {
+			$form.append(Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: interest
+			}));
+		});
+	}
+
+	function assertCanonicalInterest($form) {
+		const interests = $form.find('input[name="interests[]"]')
+			.toArray()
+			.map((input) => Cypress.$(input).val());
+
+		expect(interests.filter((interest) => interest === interestOption)).to.have.length(1);
+		expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+	}
+
 	function assignInterestToPaulHudson() {
 		openPublicKnowledgeUsersFromHostedJournals();
 
@@ -84,6 +103,7 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 		cy.get('#userDetailsForm').should('exist');
 		selectConfiguredInterest();
 		cy.get('#userDetailsForm').then(($form) => {
+			appendCanonicalizationCases($form);
 			$form.append('<input data-cy="injected-admin-interest" type="hidden" name="interests[]" value="Injected admin interest">');
 			cy.intercept('POST', $form.attr('action')).as('manipulatedAdminUpdate');
 		});
@@ -96,10 +116,28 @@ describe('Filtering reviewers by interests from Hosted Journals', function () {
 		cy.wait('@manipulatedAdminUpdate').its('response.body.status').should('eq', false);
 		cy.get('#userDetailsForm').should('exist');
 		cy.get('[data-cy="injected-admin-interest"]').then(($input) => $input.remove());
+		cy.get('#userDetailsForm').then(($form) => {
+			cy.intercept('POST', $form.attr('action')).as('canonicalAdminUpdate');
+		});
 		cy.get('#userDetailsForm button[id^=submitFormButton]')
 			.scrollIntoView()
 			.click({force: true});
+		cy.wait('@canonicalAdminUpdate').its('response.body.status').should('eq', true);
 		cy.waitJQuery();
+
+		cy.logout();
+		openPublicKnowledgeUsersFromHostedJournals();
+		cy.get('#userGridContainer')
+			.contains('tr', 'phudson')
+			.as('canonicalPaulHudsonRow');
+		cy.get('@canonicalPaulHudsonRow').find('a.show_extras').click({force: true});
+		cy.get('@canonicalPaulHudsonRow')
+			.next('tr.row_controls')
+			.contains('Edit')
+			.click({force: true});
+		cy.get('#userDetailsForm').should(($form) => {
+			assertCanonicalInterest($form);
+		});
 		cy.logout();
 	}
 
