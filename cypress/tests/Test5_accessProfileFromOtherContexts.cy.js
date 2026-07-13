@@ -217,9 +217,17 @@ describe('Accessing profile from other contexts works normally', function () {
 				name: 'interests[]',
 				value: secondContextOption
 			}).appendTo($form);
+			cy.request({
+				method: 'POST',
+				url: $form.attr('action'),
+				body: $form.serialize(),
+				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+				failOnStatusCode: false
+			}).then((response) => {
+				expect(response.status).to.eq(200);
+				expect(JSON.stringify(response.body)).to.contain('dataChanged');
+			});
 		});
-		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
-		cy.waitJQuery();
 		cy.visit('index.php/' + secondJournalPath + '/user/profile');
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
