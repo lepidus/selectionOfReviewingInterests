@@ -167,8 +167,10 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.visit('index.php/' + secondJournalPath + '/management/settings/website');
 		cy.get('#plugins-button').click();
 		cy.get('input[id^=select-cell-selectionofreviewinginterests]').check();
-		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
-		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.waitJQuery();
+		cy.get('input[id^=select-cell-selectionofreviewinginterests]').should('be.checked');
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click({force: true});
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click({force: true});
 		cy.waitJQuery();
 		cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
 			.contains('Add option')
