@@ -132,7 +132,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 				form: true,
 				failOnStatusCode: false
 			}).then((response) => {
-				expect(response.statusCode).to.eq(200);
+				expect(response.status).to.eq(200);
 				expect(response.body.status).to.eq(false);
 			});
 		});
