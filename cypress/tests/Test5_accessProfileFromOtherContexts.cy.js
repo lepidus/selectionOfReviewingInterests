@@ -187,16 +187,21 @@ describe('Accessing profile from other contexts works normally', function () {
 			}).then((response) => {
 				expect(response.status).to.eq(200);
 				expect(response.body.status).to.eq(true);
-				const optionId = String(response.body.elementId);
-			expect(optionId).to.match(/^[a-f0-9]{13}$/);
-				const deleteUrl = new URL(updateUrl, window.location.origin);
-				deleteUrl.pathname = deleteUrl.pathname.replace(/update-option$/, 'delete-option');
-				deleteUrl.search = '';
-				deleteUrl.searchParams.set('optionId', optionId);
-			cy.wrap({
-				url: deleteUrl.toString(),
-				optionId: optionId
-			}).as('secondDeleteRequest');
+			});
+		});
+		openPluginSettings(secondJournalPath);
+		cy.contains('tr.gridRow', secondContextOption).as('secondOptionRow');
+		cy.get('@secondOptionRow').find('a.show_extras').click();
+		cy.get('@secondOptionRow').next('tr.row_controls').find('a[id*="-deleteOption-button-"]').then(($deleteLink) => {
+			const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+			cy.wrap($deleteLink).click();
+			cy.then(() => {
+				const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+				const deleteUrl = new URL(modalHandler.remoteAction_, window.location.origin);
+				const optionId = deleteUrl.searchParams.get('optionId');
+				expect(optionId).to.match(/^[a-f0-9]{13}$/);
+				cy.wrap({url: deleteUrl.toString(), optionId: optionId}).as('secondDeleteRequest');
+				closeLatestModal();
 			});
 		});
 
