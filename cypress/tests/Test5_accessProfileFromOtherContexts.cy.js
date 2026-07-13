@@ -212,6 +212,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('#profileTabs').find('li a').contains('Roles').click();
 		cy.waitJQuery();
 		cy.get('#rolesForm').then(($form) => {
+			$form.find('input[name="interests[]"]').remove();
 			Cypress.$('<input>', {
 				type: 'hidden',
 				name: 'interests[]',
