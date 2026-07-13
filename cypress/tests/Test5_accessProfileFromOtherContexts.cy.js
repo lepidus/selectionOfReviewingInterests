@@ -177,19 +177,9 @@ describe('Accessing profile from other contexts works normally', function () {
 			.click();
 		cy.get('input[id^=optionName-]:visible').last().clear().type(secondContextOption, {delay: 0});
 		cy.get('input[id^=optionName-]:visible').last().closest('form').then(($form) => {
-			const updateUrl = $form.attr('action');
-			cy.request({
-				method: 'POST',
-				url: updateUrl,
-				body: $form.serialize(),
-				headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-				failOnStatusCode: false
-			}).then((response) => {
-				expect(response.status).to.eq(200);
-				expect(response.body.status).to.eq(true);
-			});
+			cy.wrap($form).find('button[id^=submitFormButton]').click();
 		});
-		openPluginSettings(secondJournalPath);
+		cy.waitJQuery();
 		cy.contains('tr.gridRow', secondContextOption).as('secondOptionRow');
 		cy.get('@secondOptionRow').find('a.show_extras').click();
 		cy.get('@secondOptionRow').next('tr.row_controls').find('a[id*="-deleteOption-button-"]').then(($deleteLink) => {
