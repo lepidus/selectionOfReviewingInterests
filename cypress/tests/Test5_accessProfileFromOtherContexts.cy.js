@@ -72,6 +72,7 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('button').contains('Save').click();
 
 		cy.contains('Settings Wizard');
+		cy.logout();
 	});
 
 	it('Reviewer accesses profile from the second journal without plugin interference', function () {
@@ -178,6 +179,7 @@ describe('Accessing profile from other contexts works normally', function () {
 
 		let secondDeleteRequest;
 
+		cy.logout();
 		cy.login('admin', 'admin');
 		openSecondJournalPluginSettings();
 		cy.get('body').then(($body) => {

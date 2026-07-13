@@ -151,6 +151,8 @@ describe('Configure reviewing interests options', function () {
             });
         }).its('body.status').should('eq', true);
 
+        cy.logout();
+        cy.login('dbarnes', null, 'publicknowledge');
         openPluginSettings();
         cy.contains(temporaryOption).should('not.exist');
     });
