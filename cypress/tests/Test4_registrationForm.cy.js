@@ -50,6 +50,7 @@ describe('Registration form should not display reviewing interests field', funct
 			}
 		});
 		cy.get('form#register button[type="submit"]').click();
-		cy.location('pathname').should('not.include', '/user/register');
+		cy.get('form#register').should('not.exist');
+		cy.get('.page_register_complete').should('be.visible');
 	});
 });

@@ -50,18 +50,27 @@ describe('Configure reviewing interests options', function () {
             .next('tr.row_controls')
             .find('a[id*="-deleteOption-button-"]')
             .then(($deleteLink) => {
-                const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-                const requestOptions = handler.linkActionRequest_.getOptions();
-                const remoteAction = requestOptions.remoteAction;
-                const csrfToken = requestOptions.csrfToken;
+                const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+                cy.wrap($deleteLink).click();
+                cy.then(() => {
+                    const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+                    cy.wrap({
+                        remoteAction: modalHandler.remoteAction_,
+                        csrfToken: modalHandler.postData_.csrfToken
+                    }).as('deleteRequest');
+                    cy.get('.pkpModalCloseButton').click();
+                });
+            });
 
-                cy.request({
+        cy.get('@deleteRequest').then(({remoteAction, csrfToken}) => {
+
+            cy.request({
                     method: 'GET',
                     url: remoteAction,
                     failOnStatusCode: false
                 }).its('body.status').should('eq', false);
 
-                cy.request({
+            cy.request({
                     method: 'POST',
                     url: remoteAction,
                     body: {},
@@ -69,7 +78,7 @@ describe('Configure reviewing interests options', function () {
                     failOnStatusCode: false
                 }).its('body.status').should('eq', false);
 
-                cy.request({
+            cy.request({
                     method: 'POST',
                     url: remoteAction,
                     body: {csrfToken: 'invalid-token'},
@@ -77,9 +86,9 @@ describe('Configure reviewing interests options', function () {
                     failOnStatusCode: false
                 }).its('body.status').should('eq', false);
 
-                const invalidIdUrl = new URL(remoteAction);
-                invalidIdUrl.searchParams.set('optionId', 'not-a-valid-option-id');
-                cy.request({
+            const invalidIdUrl = new URL(remoteAction);
+            invalidIdUrl.searchParams.set('optionId', 'not-a-valid-option-id');
+            cy.request({
                     method: 'POST',
                     url: invalidIdUrl.toString(),
                     body: {csrfToken},
@@ -87,13 +96,13 @@ describe('Configure reviewing interests options', function () {
                     failOnStatusCode: false
                 }).its('body.status').should('eq', false);
 
-                cy.request({
+            cy.request({
                     method: 'POST',
                     url: remoteAction,
                     body: {csrfToken},
                     form: true
                 }).its('body.status').should('eq', true);
-            });
+        });
 
         cy.reload();
         cy.waitJQuery();

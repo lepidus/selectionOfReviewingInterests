@@ -180,11 +180,15 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 			.next('tr.row_controls')
 			.find('a[id*="-deleteOption-button-"]')
 			.then(($deleteLink) => {
-				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-				const remoteAction = handler.linkActionRequest_.getOptions().remoteAction;
-				const foreignOptionId = new URL(remoteAction).searchParams.get('optionId');
-				expect(foreignOptionId).to.match(/^[a-f0-9]{13}$/);
-				cy.wrap(foreignOptionId).as('foreignOptionId');
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					const foreignOptionId = new URL(modalHandler.remoteAction_).searchParams.get('optionId');
+					expect(foreignOptionId).to.match(/^[a-f0-9]{13}$/);
+					cy.wrap(foreignOptionId).as('foreignOptionId');
+					cy.get('.pkpModalCloseButton').click();
+				});
 			});
 
 		cy.logout();
@@ -196,10 +200,19 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 			.next('tr.row_controls')
 			.find('a[id*="-deleteOption-button-"]')
 			.then(($deleteLink) => {
-				const handler = Cypress.$.pkp.classes.Handler.getHandler($deleteLink);
-				const requestOptions = handler.linkActionRequest_.getOptions();
-				const remoteAction = requestOptions.remoteAction;
-				const csrfToken = requestOptions.csrfToken;
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					cy.wrap({
+						remoteAction: modalHandler.remoteAction_,
+						csrfToken: modalHandler.postData_.csrfToken
+					}).as('currentDeleteRequest');
+					cy.get('.pkpModalCloseButton').click();
+				});
+			});
+
+		cy.get('@currentDeleteRequest').then(({remoteAction, csrfToken}) => {
 
 				cy.get('@foreignOptionId').then((foreignOptionId) => {
 					const foreignIdOnCurrentContextUrl = new URL(remoteAction);
@@ -220,7 +233,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 					'SoriSecurityRegistration123!',
 					remoteAction
 				);
-			});
+		});
 
 		cy.logout();
 		cy.login('admin', 'admin', 'secondjournal');

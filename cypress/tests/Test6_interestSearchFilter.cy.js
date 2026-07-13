@@ -30,7 +30,7 @@ describe('Filtering reviews by interests', function () {
                 expect($form.find('input[name="userGroupId"]')).to.have.length(1);
             }
         });
-        cy.get('#createReviewerForm input[name="skipEmail"]').scrollIntoView().check({force: true});
+        cy.get('#createReviewerForm input[name="skipEmail"]').first().scrollIntoView().check({force: true});
         cy.get('#createReviewerForm').then(($form) => {
             Cypress.$('<input>', {
                 type: 'hidden',
@@ -45,7 +45,7 @@ describe('Filtering reviews by interests', function () {
             expect(response.statusCode).to.eq(200);
             expect(JSON.stringify(response.body)).to.contain(invalidInterestMessage);
         });
-        cy.contains(invalidInterestMessage).should('exist').scrollIntoView();
+        cy.contains(invalidInterestMessage).first().should('exist').scrollIntoView();
 
         cy.get('#createReviewerForm').then(($form) => $form.find('[name^="interests"]').remove());
         cy.intercept('POST', '**/createReviewer*').as('validReviewerCreation');
