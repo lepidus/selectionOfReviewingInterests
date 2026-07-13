@@ -193,6 +193,8 @@ class HookCallbacks
             return false;
         }
 
+        $form->setData('interests', $submittedInterests);
+
         $existingInterests = $this->getExistingInterestsForForm($form);
         foreach ($submittedInterests as $interest) {
             if (!in_array($interest, $availableOptions, true)
