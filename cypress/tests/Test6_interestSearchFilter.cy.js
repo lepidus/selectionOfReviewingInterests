@@ -43,7 +43,7 @@ describe('Filtering reviews by interests', function () {
             }).appendTo($form);
         });
 
-        cy.intercept('POST', '**/create-reviewer*').as('invalidReviewerCreation');
+        cy.intercept('POST', '**').as('invalidReviewerCreation');
         getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@invalidReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
@@ -52,7 +52,7 @@ describe('Filtering reviews by interests', function () {
         getLatestCreateReviewerForm().contains(invalidInterestMessage).first().should('exist').scrollIntoView();
 
         getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
-        cy.intercept('POST', '**/create-reviewer*').as('validReviewerCreation');
+        cy.intercept('POST', '**').as('validReviewerCreation');
         getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@validReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
