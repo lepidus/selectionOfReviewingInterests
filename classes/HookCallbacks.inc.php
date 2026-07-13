@@ -155,7 +155,7 @@ class HookCallbacks
     public function userDetailsInterestsAssetsFilter($output, $templateMgr)
     {
         if (strpos($output, 'id="userDetailsForm"') === false
-                || !preg_match('/class="[^"]*\binterests\b[^"]*"/', $output)) {
+                || !$this->hasClassToken($output, 'interests')) {
             return $output;
         }
 
@@ -168,6 +168,22 @@ class HookCallbacks
         $templateMgr->unregisterFilter('output', [$this, 'userDetailsInterestsAssetsFilter']);
 
         return $output . $this->getInterestsAssetsMarkup($context->getId());
+    }
+
+    private function hasClassToken(string $output, string $className): bool
+    {
+        if (!preg_match_all('/(?:^|[<\s])class\s*=\s*(["\'])(.*?)\1/s', $output, $matches)) {
+            return false;
+        }
+
+        foreach ($matches[2] as $classAttribute) {
+            $classTokens = preg_split('/\s+/', trim($classAttribute));
+            if (in_array($className, $classTokens, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function validateSubmittedInterests(string $hookName, array $params)
