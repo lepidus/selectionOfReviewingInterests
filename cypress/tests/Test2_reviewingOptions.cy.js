@@ -21,7 +21,7 @@ describe('Configure reviewing interests options', function () {
 
     function openPluginSettings() {
         cy.visit('/index.php/publicknowledge/en/management/settings/website#plugins');
-        cy.get('button[id="plugins-button"]').click();
+        cy.get('button[id="plugins-button"]').click({force: true});
 
         const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
         cy.get('tr#' + pluginRowId + ' a.show_extras').click();

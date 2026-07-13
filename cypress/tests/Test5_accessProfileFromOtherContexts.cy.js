@@ -146,11 +146,12 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('.interests').should('contain.text', 'Administrative Legacy Topic');
 		cy.get('.interests').should('contain.text', 'Estudos teóricos');
 
-		cy.get('.interests li')
-			.filter((index, item) => Cypress.$(item).text().trim() === 'Custom Research Topic')
-			.then(($item) => $item.remove());
-		cy.get('input[name="interests[]"][value="Custom Research Topic"]')
-			.then(($input) => $input.remove());
+		cy.get('#rolesForm').then(($form) => {
+			$form.find('.interests li')
+				.filter((index, item) => Cypress.$(item).text().trim() === 'Custom Research Topic')
+				.remove();
+			$form.find('input[name="interests[]"][value="Custom Research Topic"]').remove();
+		});
 		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
 		cy.waitJQuery();
 
