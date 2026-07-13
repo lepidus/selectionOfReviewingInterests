@@ -179,25 +179,18 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.server();
 		cy.route('GET', '**/interest-options-grid/fetch-row*').as('secondOptionRow');
 		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
-		cy.wait('@secondOptionRow').its('status').should('eq', 200);
-		openPluginSettings(secondJournalPath);
-		cy.contains('tr.gridRow', secondContextOption).then(($row) => {
-			cy.wrap($row).find('a.show_extras').click();
-			cy.wrap($row).next('tr.row_controls')
-				.find('a[id*="-deleteOption-button-"]')
-				.then(($deleteLink) => {
-				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
-				cy.wrap($deleteLink).click();
-				cy.then(() => {
-					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
-					const url = new URL(modalHandler.remoteAction_, window.location.origin);
-					cy.wrap({
-						url: modalHandler.remoteAction_,
-						optionId: url.searchParams.get('optionId')
-					}).as('secondDeleteRequest');
-					closeLatestModal();
-				});
-			});
+		cy.wait('@secondOptionRow').then((xhr) => {
+			expect(xhr.status).to.eq(200);
+			const fetchRowUrl = new URL(xhr.url, window.location.origin);
+			const optionId = fetchRowUrl.searchParams.get('rowId');
+			expect(optionId).to.match(/^[a-f0-9]{13}$/);
+			fetchRowUrl.pathname = fetchRowUrl.pathname.replace(/fetch-row$/, 'delete-option');
+			fetchRowUrl.search = '';
+			fetchRowUrl.searchParams.set('optionId', optionId);
+			cy.wrap({
+				url: fetchRowUrl.toString(),
+				optionId: optionId
+			}).as('secondDeleteRequest');
 		});
 
 		cy.logout();
@@ -251,8 +244,19 @@ describe('Accessing profile from other contexts works normally', function () {
 		});
 
 		cy.logout();
-		cy.login('admin', 'admin');
-		openPluginSettings(secondJournalPath);
-		cy.contains('tr.gridRow', secondContextOption).should('exist');
+		cy.login('agallego', null, secondJournalPath);
+		cy.visit('index.php/' + secondJournalPath + '/user/profile');
+		cy.get('#profileTabs').find('li a').contains('Roles').click();
+		cy.waitJQuery();
+		cy.get('.interests .tagit-label').contains(secondContextOption).should('exist');
+		cy.get('#rolesForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: publicContextOption
+			}).appendTo($form);
+		});
+		cy.get('#rolesForm > .formButtons > button[id^=submitFormButton]').click();
+		cy.contains('Select only the predefined reviewing interests.').should('be.visible');
 	});
 });
