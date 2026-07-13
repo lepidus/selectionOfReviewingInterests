@@ -1,6 +1,6 @@
 describe('Filtering reviews by interests', function () {
     function getLatestCreateReviewerForm() {
-        return cy.get('#createReviewerForm:visible').last();
+        return cy.get('#createReviewerForm').last();
     }
 
     it('Accessing the interests filter', function () {
