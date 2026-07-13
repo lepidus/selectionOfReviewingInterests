@@ -175,8 +175,8 @@ describe('Accessing profile from other contexts works normally', function () {
 		cy.get('a[id^=component-plugins-generic-selectionofreviewinginterests-controllers-grid-interestoptionsgrid-addOption-button-]')
 			.contains('Add option')
 			.click();
-		cy.get('input[id^=optionName-]').clear().type(secondContextOption, {delay: 0});
-		cy.get('#interestOptionForm').then(($form) => {
+		cy.get('input[id^=optionName-]:visible').last().clear().type(secondContextOption, {delay: 0});
+		cy.get('input[id^=optionName-]:visible').last().closest('form').then(($form) => {
 			const updateUrl = $form.attr('action');
 			cy.request({
 				method: 'POST',
