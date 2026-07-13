@@ -176,8 +176,10 @@ describe('Accessing profile from other contexts works normally', function () {
 			.contains('Add option')
 			.click();
 		cy.get('input[id^=optionName-]').clear().type(secondContextOption, {delay: 0});
+		cy.server();
+		cy.route('GET', '**/interest-options-grid/fetch-row*').as('secondOptionRow');
 		cy.get('#interestOptionForm > .formButtons > button[id^=submitFormButton]').click();
-		cy.waitJQuery();
+		cy.wait('@secondOptionRow').its('status').should('eq', 200);
 		cy.contains('tr.gridRow', secondContextOption).then(($row) => {
 			cy.wrap($row).find('a.show_extras').click();
 			cy.wrap($row).next('tr.row_controls')
