@@ -3,14 +3,9 @@ describe('Filtering reviews by interests', function () {
         return cy.get('.pkp_modal.is_visible #createReviewerForm').last();
     }
 
-    function interceptReviewerCreation(alias, reviewerUsername) {
-        cy.intercept('POST', '**', (request) => {
-            const body = typeof request.body === 'string'
-                ? request.body
-                : JSON.stringify(request.body || {});
-            if (body.includes('username=' + reviewerUsername)) {
-                request.alias = alias;
-            }
+    function interceptReviewerCreation(alias) {
+        getLatestCreateReviewerForm().then(($form) => {
+            cy.intercept('POST', $form.attr('action')).as(alias);
         });
     }
 
@@ -54,7 +49,7 @@ describe('Filtering reviews by interests', function () {
             }).appendTo($form);
         });
 
-        interceptReviewerCreation('invalidReviewerCreation', reviewerUsername);
+        interceptReviewerCreation('invalidReviewerCreation');
         getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@invalidReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
@@ -63,7 +58,7 @@ describe('Filtering reviews by interests', function () {
         getLatestCreateReviewerForm().contains(invalidInterestMessage).first().should('exist').scrollIntoView();
 
         getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
-        interceptReviewerCreation('validReviewerCreation', reviewerUsername);
+        interceptReviewerCreation('validReviewerCreation');
         getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@validReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
