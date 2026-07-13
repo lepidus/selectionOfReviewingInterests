@@ -245,7 +245,7 @@ describe('Accessing profile from other contexts works normally', function () {
 			openPluginSettings('publicknowledge');
 			cy.get('a[id*="-deleteOption-button-"]').first().then(($deleteLink) => {
 				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
-				cy.wrap($deleteLink).click();
+				cy.wrap($deleteLink).click({force: true});
 				cy.then(() => {
 					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
 					const crossContextUrl = modalHandler.remoteAction_.replace(
