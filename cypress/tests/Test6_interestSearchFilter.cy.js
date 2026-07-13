@@ -1,4 +1,8 @@
 describe('Filtering reviews by interests', function () {
+    function getLatestCreateReviewerForm() {
+        return cy.get('#createReviewerForm:visible').last();
+    }
+
     it('Accessing the interests filter', function () {
         const reviewerUsername = 'sori_created_reviewer';
         const invalidInterestMessage = 'Select only the predefined reviewing interests.';
@@ -17,12 +21,12 @@ describe('Filtering reviews by interests', function () {
 
         cy.contains('a', 'Create New Reviewer').click();
         cy.waitJQuery();
-        cy.get('#createReviewerForm').should('exist').scrollIntoView();
-        cy.get('#createReviewerForm input[name="givenName[en]"]').scrollIntoView().type('Sori Created', {force: true});
-        cy.get('#createReviewerForm input[name="familyName[en]"]').scrollIntoView().type('Reviewer', {force: true});
-        cy.get('#createReviewerForm input[name="username"]').scrollIntoView().type(reviewerUsername, {force: true});
-        cy.get('#createReviewerForm input[name="email"]').scrollIntoView().type(reviewerUsername + '@example.com', {force: true});
-        cy.get('#createReviewerForm').then(($form) => {
+        getLatestCreateReviewerForm().should('exist').scrollIntoView();
+        getLatestCreateReviewerForm().find('input[name="givenName[en]"]').first().scrollIntoView().type('Sori Created', {force: true});
+        getLatestCreateReviewerForm().find('input[name="familyName[en]"]').first().scrollIntoView().type('Reviewer', {force: true});
+        getLatestCreateReviewerForm().find('input[name="username"]').first().scrollIntoView().type(reviewerUsername, {force: true});
+        getLatestCreateReviewerForm().find('input[name="email"]').first().scrollIntoView().type(reviewerUsername + '@example.com', {force: true});
+        getLatestCreateReviewerForm().then(($form) => {
             const $select = $form.find('select[name="userGroupId"]');
             if ($select.length) {
                 cy.wrap($select).scrollIntoView().select(1, {force: true});
@@ -30,8 +34,8 @@ describe('Filtering reviews by interests', function () {
                 expect($form.find('input[name="userGroupId"]')).to.have.length(1);
             }
         });
-        cy.get('#createReviewerForm input[name="skipEmail"]').first().scrollIntoView().check({force: true});
-        cy.get('#createReviewerForm').then(($form) => {
+        getLatestCreateReviewerForm().find('input[name="skipEmail"]').first().scrollIntoView().check({force: true});
+        getLatestCreateReviewerForm().then(($form) => {
             Cypress.$('<input>', {
                 type: 'hidden',
                 name: 'interests[]',
@@ -40,16 +44,16 @@ describe('Filtering reviews by interests', function () {
         });
 
         cy.intercept('POST', '**/createReviewer*').as('invalidReviewerCreation');
-        cy.get('#createReviewerForm button[id^="submitFormButton"]').scrollIntoView().click({force: true});
+        getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@invalidReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
             expect(JSON.stringify(response.body)).to.contain(invalidInterestMessage);
         });
-        cy.contains(invalidInterestMessage).first().should('exist').scrollIntoView();
+        getLatestCreateReviewerForm().contains(invalidInterestMessage).first().should('exist').scrollIntoView();
 
-        cy.get('#createReviewerForm').then(($form) => $form.find('[name^="interests"]').remove());
+        getLatestCreateReviewerForm().then(($form) => $form.find('[name^="interests"]').remove());
         cy.intercept('POST', '**/createReviewer*').as('validReviewerCreation');
-        cy.get('#createReviewerForm button[id^="submitFormButton"]').scrollIntoView().click({force: true});
+        getLatestCreateReviewerForm().find('button[id^="submitFormButton"]').first().scrollIntoView().click({force: true});
         cy.wait('@validReviewerCreation').then(({response}) => {
             expect(response.statusCode).to.eq(200);
             expect(JSON.stringify(response.body)).not.to.contain('already in use');

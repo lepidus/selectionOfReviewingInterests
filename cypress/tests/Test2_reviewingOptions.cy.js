@@ -1,4 +1,8 @@
 describe('Configure reviewing interests options', function () {
+    function closeLatestModal() {
+        cy.get('.pkpModalCloseButton:visible').last().click();
+    }
+
     it('Create options', function () {
         cy.login('dbarnes', null, 'publicknowledge');
         cy.get('nav').contains('Settings').click();
@@ -58,7 +62,7 @@ describe('Configure reviewing interests options', function () {
                         remoteAction: modalHandler.remoteAction_,
                         csrfToken: modalHandler.postData_.csrfToken
                     }).as('deleteRequest');
-                    cy.get('.pkpModalCloseButton').click();
+                    closeLatestModal();
                 });
             });
 

@@ -6,6 +6,10 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const managerLegacyInterest = 'Manager Legacy Topic';
 	const secondJournalInterest = 'Exclusive interest configured for the second journal';
 
+	function closeLatestModal() {
+		cy.get('.pkpModalCloseButton:visible').last().click();
+	}
+
 	function openUserSearchFilter() {
 		cy.get('#userGridContainer').within(() => {
 			cy.get('.pkp_linkaction_search').click();
@@ -187,7 +191,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 					const foreignOptionId = new URL(modalHandler.remoteAction_).searchParams.get('optionId');
 					expect(foreignOptionId).to.match(/^[a-f0-9]{13}$/);
 					cy.wrap(foreignOptionId).as('foreignOptionId');
-					cy.get('.pkpModalCloseButton').click();
+					closeLatestModal();
 				});
 			});
 
@@ -208,7 +212,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 						remoteAction: modalHandler.remoteAction_,
 						csrfToken: modalHandler.postData_.csrfToken
 					}).as('currentDeleteRequest');
-					cy.get('.pkpModalCloseButton').click();
+					closeLatestModal();
 				});
 			});
 
