@@ -26,6 +26,10 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
             Hook::add('LoadComponentHandler', $this->setupGridHandler(...));
 
             if ($this->hasConfiguredInterestOptions()) {
+                Hook::add('rolesform::validate', $hookCallbacks->validateSubmittedInterests(...));
+                Hook::add('registrationform::validate', $hookCallbacks->validateSubmittedInterests(...));
+                Hook::add('userdetailsform::validate', $hookCallbacks->validateSubmittedInterests(...));
+                Hook::add('createreviewerform::validate', $hookCallbacks->validateSubmittedInterests(...));
                 Hook::add('TemplateManager::display', $hookCallbacks->addChangesOnTemplateDisplaying(...));
                 Hook::add('Common::UserDetails::AdditionalItems', $hookCallbacks->addInterestsPatchToUserDetailsForm(...));
                 Hook::add('Request::redirect', $hookCallbacks->redirectUserAfterLogin(...));
