@@ -150,14 +150,23 @@ class InterestOptionsGridHandler extends GridHandler
 
     public function deleteOption($args, $request)
     {
+        if (!$request->isPost() || !$request->checkCSRF()) {
+            return new JSONMessage(false);
+        }
+
         $optionId = $request->getUserVar('optionId');
+        if (!is_string($optionId) || !preg_match('/\A[a-f0-9]{13}\z/D', $optionId)) {
+            return new JSONMessage(false);
+        }
 
         $options = $this->plugin->getSetting($this->contextId, 'interestOptions') ?: array();
 
-        if (isset($options[$optionId])) {
-            unset($options[$optionId]);
-            $this->plugin->updateSetting($this->contextId, 'interestOptions', $options);
+        if (!isset($options[$optionId])) {
+            return new JSONMessage(false);
         }
+
+        unset($options[$optionId]);
+        $this->plugin->updateSetting($this->contextId, 'interestOptions', $options);
 
         return DAO::getDataChangedEvent($optionId);
     }

@@ -10,6 +10,9 @@ msgstr "You must select at least one reviewing interest in the \"Roles\" tab bef
 msgid "plugins.generic.selectionOfReviewingInterests.profilePage.placeholder"
 msgstr "Select one or more options"
 
+msgid "plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest"
+msgstr "Select only the predefined reviewing interests. Previously saved interests may be kept or removed."
+
 msgid "plugins.generic.selectionOfReviewingInterests.configuration.description"
 msgstr "Define the reviewing interest options available to reviewers. These options replace the free-text interests field in the user profile. Reviewers will only be able to select from the options listed below. Reviewers who have not selected at least one interest will be redirected to their profile page upon login."
 

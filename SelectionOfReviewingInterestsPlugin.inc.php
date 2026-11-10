@@ -22,6 +22,10 @@ class SelectionOfReviewingInterestsPlugin extends GenericPlugin
                 HookRegistry::register('API::users::reviewers::params', [$hookCallbacks, 'addReviewerInterestFilterParam']);
                 HookRegistry::register('User::getReviewers::queryBuilder', [$hookCallbacks, 'setReviewerInterestFilter']);
                 HookRegistry::register('User::getMany::queryObject', [$hookCallbacks, 'applyReviewerInterestFilter']);
+                HookRegistry::register('registrationform::validate', [$hookCallbacks, 'validateSubmittedInterests']);
+                HookRegistry::register('rolesform::validate', [$hookCallbacks, 'validateSubmittedInterests']);
+                HookRegistry::register('userdetailsform::validate', [$hookCallbacks, 'validateSubmittedInterests']);
+                HookRegistry::register('createreviewerform::validate', [$hookCallbacks, 'validateSubmittedInterests']);
             }
         }
         return $success;

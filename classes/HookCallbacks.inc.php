@@ -155,7 +155,7 @@ class HookCallbacks
     public function userDetailsInterestsAssetsFilter($output, $templateMgr)
     {
         if (strpos($output, 'id="userDetailsForm"') === false
-                || strpos($output, 'class="interests"') === false) {
+                || !$this->hasClassToken($output, 'interests')) {
             return $output;
         }
 
@@ -168,6 +168,62 @@ class HookCallbacks
         $templateMgr->unregisterFilter('output', [$this, 'userDetailsInterestsAssetsFilter']);
 
         return $output . $this->getInterestsAssetsMarkup($context->getId());
+    }
+
+    private function hasClassToken(string $output, string $className): bool
+    {
+        if (!preg_match_all('/(?:^|[<\s])class\s*=\s*(["\'])(.*?)\1/s', $output, $matches)) {
+            return false;
+        }
+
+        foreach ($matches[2] as $classAttribute) {
+            $classTokens = preg_split('/\s+/', trim($classAttribute));
+            if (in_array($className, $classTokens, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function validateSubmittedInterests(string $hookName, array $params)
+    {
+        $form = $params[0];
+        $request = Application::get()->getRequest();
+        $context = $request->getContext();
+        if (!$context) {
+            return false;
+        }
+
+        $availableOptions = $this->getInterestOptions($context->getId());
+        if (empty($availableOptions)) {
+            return false;
+        }
+
+        $submittedInterests = $this->normalizeSubmittedInterests($form->getData('interests'));
+        if ($submittedInterests === null) {
+            $form->addError(
+                'interests',
+                __('plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest')
+            );
+            return false;
+        }
+
+        $form->setData('interests', $submittedInterests);
+
+        $existingInterests = $this->getExistingInterestsForForm($form);
+        foreach ($submittedInterests as $interest) {
+            if (!in_array($interest, $availableOptions, true)
+                    && !in_array($interest, $existingInterests, true)) {
+                $form->addError(
+                    'interests',
+                    __('plugins.generic.selectionOfReviewingInterests.profilePage.invalidInterest')
+                );
+                break;
+            }
+        }
+
+        return false;
     }
 
     public function addReviewerInterestFilterParam(string $hookName, array $params)
@@ -416,5 +472,48 @@ class HookCallbacks
         return array_values(array_filter($interestOptions, function ($option) use ($availableOptions) {
             return in_array($option, $availableOptions, true);
         }));
+    }
+
+    private function normalizeSubmittedInterests($interests)
+    {
+        if (is_string($interests)) {
+            $interests = $interests === '' ? [] : explode(',', $interests);
+        } elseif ($interests === null) {
+            $interests = [];
+        } elseif (!is_array($interests)) {
+            return null;
+        }
+
+        $normalizedInterests = [];
+        foreach ($interests as $interest) {
+            if (!is_string($interest)) {
+                return null;
+            }
+
+            $interest = trim($interest);
+            if ($interest !== '') {
+                $normalizedInterests[] = $interest;
+            }
+        }
+
+        return array_values(array_unique($normalizedInterests));
+    }
+
+    private function getExistingInterestsForForm($form)
+    {
+        $user = null;
+        if ($form instanceof RolesForm) {
+            $user = $form->getUser();
+        } elseif ($form instanceof UserDetailsForm && isset($form->user)) {
+            $user = $form->user;
+        }
+
+        if (!$user || !$user->getId()) {
+            return [];
+        }
+
+        import('lib.pkp.classes.user.InterestManager');
+        $interestManager = new InterestManager();
+        return $this->normalizeSubmittedInterests($interestManager->getInterestsForUser($user)) ?: [];
     }
 }

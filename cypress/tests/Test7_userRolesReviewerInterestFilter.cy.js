@@ -2,6 +2,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const reviewerName = 'Paul Hudson';
 	const reviewerUsername = 'phudson';
 	const reviewingInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
+	const unexpectedInterest = 'Interest injected while editing another user';
 	const submissionTitle = 'Condensing Water Availability Models to Focus on Specific Water Management Systems';
 
 	function openUserSearchFilter() {
@@ -68,6 +69,25 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		});
 	}
 
+	function appendCanonicalizationCases($form, validInterest) {
+		['', '   ', validInterest, '  ' + validInterest + '  '].forEach((interest) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: interest
+			}).appendTo($form);
+		});
+	}
+
+	function assertCanonicalInterest($form, validInterest) {
+		const interests = $form.find('input[name="interests[]"]')
+			.toArray()
+			.map((input) => Cypress.$(input).val());
+
+		expect(interests.filter((interest) => interest === validInterest)).to.have.length(1);
+		expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+	}
+
 	function saveUserDetails() {
 		cy.server();
 		cy.route('POST', '**/grid/settings/user/user-grid/update-user*').as('userSaved');
@@ -76,6 +96,19 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 			.click();
 		cy.wait('@userSaved').its('status').should('eq', 200);
 		cy.waitJQuery();
+	}
+
+	function rejectUnexpectedInterest() {
+		cy.get('form#userDetailsForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: unexpectedInterest
+			}).appendTo($form);
+		});
+		saveUserDetails();
+		cy.contains('Select only the predefined reviewing interests.').should('be.visible');
+		cy.get('.pkpModalCloseButton').click();
 	}
 
 	function openAddReviewerForSubmission(title) {
@@ -109,8 +142,20 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.login('dbarnes', null, 'publicknowledge');
 
 		openUserEditForm(reviewerUsername);
+		rejectUnexpectedInterest();
+
+		openUserEditForm(reviewerUsername);
 		selectReviewingInterestIfMissing(reviewingInterest);
+		cy.get('#userExtras .interests .tagit-label').contains(unexpectedInterest).should('not.exist');
+		cy.get('#userDetailsForm').then(($form) => {
+			appendCanonicalizationCases($form, reviewingInterest);
+		});
 		saveUserDetails();
+
+		openUserEditForm(reviewerUsername);
+		cy.get('#userDetailsForm').should(($form) => {
+			assertCanonicalInterest($form, reviewingInterest);
+		});
 
 		openAddReviewerForSubmission(submissionTitle);
 		filterReviewersByInterest(reviewingInterest);
