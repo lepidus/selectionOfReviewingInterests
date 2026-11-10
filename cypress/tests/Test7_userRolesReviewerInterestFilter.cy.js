@@ -3,6 +3,12 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	const reviewerUsername = 'phudson';
 	const reviewingInterest = 'Estudos teóricos e de campo em escalas que variam do local ao regional/global, abrangendo períodos de curta e longa duração, incluindo tempo geológico';
 	const submissionTitle = 'Condensing Water Availability Models to Focus on Specific Water Management Systems';
+	const managerLegacyInterest = 'Manager Legacy Topic';
+	const secondJournalInterest = 'Exclusive interest configured for the second journal';
+
+	function closeLatestModal() {
+		cy.get('.pkpModalCloseButton:visible').last().click();
+	}
 
 	function openUserSearchFilter() {
 		cy.get('#userGridContainer').within(() => {
@@ -12,7 +18,7 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 	}
 
 	function openUserEditForm(username) {
-		cy.get('.app__nav a:contains("Users & Roles")').click();
+		cy.visit('/index.php/publicknowledge/management/settings/access');
 		cy.waitJQuery();
 
 		openUserSearchFilter();
@@ -67,6 +73,25 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		});
 	}
 
+	function appendCanonicalizationCases($form, validInterest) {
+		['', '   ', validInterest, '  ' + validInterest + '  '].forEach((interest) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: interest
+			}).appendTo($form);
+		});
+	}
+
+	function assertCanonicalInterest($form, validInterest) {
+		const interests = $form.find('input[name="interests[]"]')
+			.toArray()
+			.map((input) => Cypress.$(input).val());
+
+		expect(interests.filter((interest) => interest === validInterest)).to.have.length(1);
+		expect(interests.filter((interest) => interest.trim() === '')).to.have.length(0);
+	}
+
 	function saveUserDetails() {
 		cy.intercept('POST', '**/grid/settings/user/user-grid/update-user*').as('userSaved');
 		cy.get('form#userDetailsForm button[id^="submitFormButton"]')
@@ -103,16 +128,152 @@ describe('Reviewer interest filter uses interests edited from Users & Roles', fu
 		cy.waitJQuery();
 	}
 
+	function openPluginConfiguration() {
+		cy.get('nav').contains('Settings').click();
+		cy.get('nav').contains('Website').click({force: true});
+		cy.get('button[id="plugins-button"]').click();
+
+		const pluginRowId = 'component-grid-settings-plugins-settingsplugingrid-category-generic-row-selectionofreviewinginterestsplugin';
+		cy.get('tr#' + pluginRowId + ' a.show_extras').click();
+		cy.get('a[id^=' + pluginRowId + '-settings-button]').click();
+		cy.waitJQuery();
+	}
+
+	function assertDeletionForbiddenForUser(username, password, remoteAction) {
+		cy.logout();
+		cy.login(username, password, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/user/profile');
+		cy.get('input[name="csrfToken"]').first().invoke('val').then((csrfToken) => {
+			cy.request({
+				method: 'POST',
+				url: remoteAction,
+				body: {csrfToken},
+				form: true,
+				failOnStatusCode: false
+			}).then((response) => {
+				expect(response.status).to.eq(200);
+				expect(response.body.status).to.eq(false);
+			});
+		});
+	}
+
 	it('shows Paul Hudson in Add Reviewer when filtering by the selected interest', function () {
 		cy.login('dbarnes', null, 'publicknowledge');
 
 		openUserEditForm(reviewerUsername);
 		selectReviewingInterestIfMissing(reviewingInterest);
+		cy.get('#userDetailsForm').then(($form) => {
+			appendCanonicalizationCases($form, reviewingInterest);
+		});
 		saveUserDetails();
+
+		openUserEditForm(reviewerUsername);
+		cy.get('#userDetailsForm').should(($form) => {
+			assertCanonicalInterest($form, reviewingInterest);
+		});
+		cy.get('#userDetailsForm').then(($form) => {
+			Cypress.$('<input>', {
+				type: 'hidden',
+				name: 'interests[]',
+				value: managerLegacyInterest
+			}).appendTo($form);
+		});
+		cy.intercept('POST', '**/grid/settings/user/user-grid/update-user*').as('invalidUserSave');
+		cy.get('form#userDetailsForm button[id^="submitFormButton"]')
+			.scrollIntoView()
+			.click();
+		cy.wait('@invalidUserSave').then(({response}) => {
+			expect(response.statusCode).to.eq(200);
+			expect(response.body.status).to.eq(false);
+		});
+
+		openUserEditForm(reviewerUsername);
+		cy.get('#userExtras .interests .tagit-label')
+			.contains(managerLegacyInterest)
+			.should('not.exist');
+		cy.get('#userExtras .interests .tagit-label')
+			.contains(reviewingInterest)
+			.should('exist');
 
 		openAddReviewerForSubmission(submissionTitle);
 		filterReviewersByInterest(reviewingInterest);
 
 		cy.contains(reviewerName);
+
+		cy.logout();
+		cy.login('admin', 'admin', 'secondjournal');
+		cy.visit('index.php/secondjournal/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', secondJournalInterest).find('a.show_extras').click();
+		cy.contains('tr.gridRow', secondJournalInterest)
+			.next('tr.row_controls')
+			.find('a[id*="-deleteOption-button-"]')
+			.then(($deleteLink) => {
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					const foreignOptionId = new URL(modalHandler.remoteAction_).searchParams.get('optionId');
+					expect(foreignOptionId).to.match(/^[a-f0-9]{13}$/);
+					cy.wrap(foreignOptionId).as('foreignOptionId');
+					closeLatestModal();
+				});
+			});
+
+		cy.logout();
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', reviewingInterest).find('a.show_extras').click();
+		cy.contains('tr.gridRow', reviewingInterest)
+			.next('tr.row_controls')
+			.find('a[id*="-deleteOption-button-"]')
+			.then(($deleteLink) => {
+				const linkActionRequest = $deleteLink.data('pkp.handler').linkActionRequest_;
+				cy.wrap($deleteLink).click();
+				cy.then(() => {
+					const modalHandler = linkActionRequest.$modal_.data('pkp.handler');
+					cy.wrap({
+						remoteAction: modalHandler.remoteAction_,
+						csrfToken: modalHandler.postData_.csrfToken
+					}).as('currentDeleteRequest');
+					closeLatestModal();
+				});
+			});
+
+		cy.get('@currentDeleteRequest').then(({remoteAction, csrfToken}) => {
+
+				cy.get('@foreignOptionId').then((foreignOptionId) => {
+					const foreignIdOnCurrentContextUrl = new URL(remoteAction);
+					foreignIdOnCurrentContextUrl.searchParams.set('optionId', foreignOptionId);
+					cy.request({
+						method: 'POST',
+						url: foreignIdOnCurrentContextUrl.toString(),
+						body: {csrfToken},
+						form: true,
+						failOnStatusCode: false
+					}).its('body.status').should('eq', false);
+				});
+
+				assertDeletionForbiddenForUser('asmecher', null, remoteAction);
+				assertDeletionForbiddenForUser('agallego', null, remoteAction);
+				assertDeletionForbiddenForUser(
+					'sorisecurityregistration',
+					'SoriSecurityRegistration123!',
+					remoteAction
+				);
+		});
+
+		cy.logout();
+		cy.login('admin', 'admin', 'secondjournal');
+		cy.visit('index.php/secondjournal/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', secondJournalInterest).should('exist');
+
+		cy.logout();
+		cy.login('dbarnes', null, 'publicknowledge');
+		cy.visit('index.php/publicknowledge/submissions');
+		openPluginConfiguration();
+		cy.contains('tr.gridRow', reviewingInterest).should('exist');
 	});
 });
